@@ -14,11 +14,17 @@ class App {
     preload() {
         App.ranPreload = true;
 
-        var leftArea = new PlayArea(this.game, 0, 0, 600, 600);
+        var spacerSize = 400;
+        var playAreaWidth = (this.game.width - spacerSize) / 2;
+
+        var leftArea = new PlayArea(this.game, 0, 0, playAreaWidth, this.game.height);
         App.register(leftArea);
 
-        var rightArea = new PlayArea(this.game, 800, 0, 600, 600);
+        var rightArea = new PlayArea(this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height);
         App.register(rightArea);
+
+        var scoreArea = new ScoreArea(this.game, playAreaWidth, 0, spacerSize, this.game.height);
+        App.register(scoreArea);
 
         _.each(App.objects, o => o.preload());
     }
@@ -47,5 +53,5 @@ class App {
 }
 
 window.onload = () => {
-    var app = new App(1400, 600);
+    var app = new App(1800, 800);
 };

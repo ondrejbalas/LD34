@@ -38,6 +38,7 @@
     <TypeScriptCompile Include="app\app.ts" />
     <TypeScriptCompile Include="app\playarea.ts" />
     <TypeScriptCompile Include="app\player.ts" />
+    <TypeScriptCompile Include="app\scorearea.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="package.json" />
