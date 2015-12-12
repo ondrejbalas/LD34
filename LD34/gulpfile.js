@@ -2,18 +2,20 @@
 'use strict';
 
 var gulp = require('gulp'),
-debug = require('gulp-debug'),
-inject = require('gulp-inject'),
-tsc = require('gulp-typescript'),
-tslint = require('gulp-tslint'),
-sourcemaps = require('gulp-sourcemaps'),
-del = require('del'),
-Config = require('./gulpfile.config'),
-tsProject = tsc.createProject('tsconfig.json'),
-path = require('path'),
-uglify = require('gulp-uglify'),
-concat = require('gulp-concat'),
-rimraf = require('gulp-rimraf');
+    debug = require('gulp-debug'),
+    inject = require('gulp-inject'),
+    tsc = require('gulp-typescript'),
+    tslint = require('gulp-tslint'),
+    sourcemaps = require('gulp-sourcemaps'),
+    del = require('del'),
+    Config = require('./gulpfile.config'),
+    tsProject = tsc.createProject('tsconfig.json'),
+    path = require('path'),
+    uglify = require('gulp-uglify'),
+    concat = require('gulp-concat'),
+    rimraf = require('gulp-rimraf'),
+    watch = require('gulp-watch'),
+    batch = require('gulp-batch');
 var config = new Config();
 
 /**
@@ -55,6 +57,12 @@ gulp.task('compress-app-js', ['compile-ts'], function () {
         .pipe(concat('app.min.js'))
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('./www/scripts/'));
+});
+
+gulp.task('watch', function() {
+    watch(config.allTypeScript, batch(function(events, done) {
+        gulp.start('compile-ts', done);
+    }));
 });
 
 /**
