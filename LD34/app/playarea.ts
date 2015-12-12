@@ -6,8 +6,7 @@ class PlayArea implements IGameObject {
 
     private playAreaColor: number = 0x000000;
 
-    constructor(private game: Phaser.Game, public x: number, public y: number, public width: number, public height: number) {
-        
+    constructor(private game: Phaser.Game, public x: number, public y: number, public width: number, public height: number, public input: PlayerInput) {
     }
 
     preload(): void {

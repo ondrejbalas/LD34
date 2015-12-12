@@ -14,13 +14,17 @@ class App {
     preload() {
         App.ranPreload = true;
 
-        var spacerSize = 400;
+        var spacerSize = 280;
         var playAreaWidth = (this.game.width - spacerSize) / 2;
 
-        var leftArea = new PlayArea(this.game, 0, 0, playAreaWidth, this.game.height);
+        var kb = this.game.input.keyboard;
+        
+        var leftKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.A), kb.addKey(Phaser.Keyboard.D));
+        var leftArea = new PlayArea(this.game, 0, 0, playAreaWidth, this.game.height, leftKeys);
         App.register(leftArea);
 
-        var rightArea = new PlayArea(this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height);
+        var rightKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.LEFT), kb.addKey(Phaser.Keyboard.RIGHT));
+        var rightArea = new PlayArea(this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys);
         App.register(rightArea);
 
         var scoreArea = new ScoreArea(this.game, playAreaWidth, 0, spacerSize, this.game.height);
@@ -53,5 +57,5 @@ class App {
 }
 
 window.onload = () => {
-    var app = new App(1800, 800);
+    var app = new App(1600, 800);
 };

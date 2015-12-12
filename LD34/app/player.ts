@@ -15,10 +15,13 @@ class Player implements IGameObject {
     private sizeMod: number;
     private frameSize: number;
 
+    private input: PlayerInput;
+
     constructor(private playArea: PlayArea) {
         this.x = playArea.width / 2;
         this.y = playArea.height - 44;
         this.g = playArea.g;
+        this.input = playArea.input;
     }
 
     preload(): void { }
@@ -30,6 +33,15 @@ class Player implements IGameObject {
     update(): void {
         this.sizeMod = (0.05 * ((this.color - this.minColor) / (this.maxColor - this.minColor)));
         this.frameSize = this.size * (1 + this.sizeMod);
+
+        if (this.input.isLeft()) {
+            this.x -= 12;
+        }
+        else if (this.input.isRight()) {
+            this.x += 12;
+        }
+
+        this.x = Math.min(Math.max(this.x, 0 + (this.frameSize + 40)), this.playArea.width - (this.frameSize + 40));
 
         this.color += (this.colorIncrement * this.isColorIncreasing);
         if (this.color >= this.maxColor) {

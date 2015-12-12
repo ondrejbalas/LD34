@@ -6,11 +6,14 @@ var App = (function () {
     }
     App.prototype.preload = function () {
         App.ranPreload = true;
-        var spacerSize = 400;
+        var spacerSize = 280;
         var playAreaWidth = (this.game.width - spacerSize) / 2;
-        var leftArea = new PlayArea(this.game, 0, 0, playAreaWidth, this.game.height);
+        var kb = this.game.input.keyboard;
+        var leftKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.A), kb.addKey(Phaser.Keyboard.D));
+        var leftArea = new PlayArea(this.game, 0, 0, playAreaWidth, this.game.height, leftKeys);
         App.register(leftArea);
-        var rightArea = new PlayArea(this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height);
+        var rightKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.LEFT), kb.addKey(Phaser.Keyboard.RIGHT));
+        var rightArea = new PlayArea(this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys);
         App.register(rightArea);
         var scoreArea = new ScoreArea(this.game, playAreaWidth, 0, spacerSize, this.game.height);
         App.register(scoreArea);
@@ -38,15 +41,16 @@ var App = (function () {
     return App;
 })();
 window.onload = function () {
-    var app = new App(1800, 800);
+    var app = new App(1600, 800);
 };
 var PlayArea = (function () {
-    function PlayArea(game, x, y, width, height) {
+    function PlayArea(game, x, y, width, height, input) {
         this.game = game;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.input = input;
         this.playAreaColor = 0x000000;
     }
     PlayArea.prototype.preload = function () {
@@ -77,6 +81,7 @@ var Player = (function () {
         this.x = playArea.width / 2;
         this.y = playArea.height - 44;
         this.g = playArea.g;
+        this.input = playArea.input;
     }
     Player.prototype.preload = function () { };
     Player.prototype.create = function () {
@@ -84,6 +89,13 @@ var Player = (function () {
     Player.prototype.update = function () {
         this.sizeMod = (0.05 * ((this.color - this.minColor) / (this.maxColor - this.minColor)));
         this.frameSize = this.size * (1 + this.sizeMod);
+        if (this.input.isLeft()) {
+            this.x -= 12;
+        }
+        else if (this.input.isRight()) {
+            this.x += 12;
+        }
+        this.x = Math.min(Math.max(this.x, 0 + (this.frameSize + 40)), this.playArea.width - (this.frameSize + 40));
         this.color += (this.colorIncrement * this.isColorIncreasing);
         if (this.color >= this.maxColor) {
             this.isColorIncreasing = -1;
@@ -99,6 +111,19 @@ var Player = (function () {
         this.g.endFill();
     };
     return Player;
+})();
+var PlayerInput = (function () {
+    function PlayerInput(leftKey, rightKey) {
+        this.leftKey = leftKey;
+        this.rightKey = rightKey;
+    }
+    PlayerInput.prototype.isLeft = function () {
+        return (this.leftKey.isDown);
+    };
+    PlayerInput.prototype.isRight = function () {
+        return (this.rightKey.isDown);
+    };
+    return PlayerInput;
 })();
 var ScoreArea = (function () {
     function ScoreArea(game, x, y, width, height) {
