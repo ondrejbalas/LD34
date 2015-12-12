@@ -1,0 +1,25 @@
+{
+  "name": "LD34",
+  "version": "0.0.0",
+  "description": "My submission for Ludum Dare 34. More at ludumdare.com",
+  "main": "gulpfile.js",
+  "scripts": { },
+  "author": "Ondrej Balas",
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-debug": "^2.0.1",
+    "gulp-inject": "^1.2.0",
+    "gulp-rimraf": "^0.1.1",
+    "gulp-sourcemaps": "^1.5.1",
+    "gulp-tslint": "^1.4.4",
+    "gulp-typescript": "^2.5.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-uglify": "^1.4.0",
+    "del": "^2.0.2"
+  },
+  "dependencies": {
+    "jquery": "^2.1.4",
+    "path": "^0.11.14",
+    "phaser": "^2.4.4"
+  }
+}

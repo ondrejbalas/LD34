@@ -19,5 +19,12 @@ window.onload = function () {
     var el = document.getElementById('content');
     var greeter = new Greeter(el);
     greeter.start();
+    var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+    function preload() {
+    }
+    function create() {
+    }
+    function update() {
+    }
 };
-//# sourceMappingURL=app.js.map
+//# sourceMappingURL=vscompiled.ts.map

@@ -1,4 +1,6 @@
-﻿class Greeter {
+﻿/// <reference path="../typings/phaser.d.ts" />
+
+class Greeter {
     element: HTMLElement;
     span: HTMLElement;
     timerToken: number;
@@ -25,4 +27,15 @@ window.onload = () => {
     var el = document.getElementById('content');
     var greeter = new Greeter(el);
     greeter.start();
+
+    var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+    function preload() {
+    }
+
+    function create() {
+    }
+
+    function update() {
+    }
 };
