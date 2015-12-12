@@ -8,6 +8,7 @@ var GulpConfig = (function () {
         this.allJavaScript = ['./www/scripts/**/*.js'];          //This is the folder with the javascript files
         this.allTypeScript = './app/**/*.ts';                   //This is the path to your typescript files
         this.libraryTypeScriptDefinitions = './typings/**/*.ts'; //This is the path to the d.ts files
+        this.cssFiles = './styles/**/*.css';
     }
     return gulpConfig;
 })();

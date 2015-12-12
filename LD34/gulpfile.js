@@ -66,6 +66,14 @@ gulp.task('cleanup-js', ['compress-app-js'], function() {
 });
 
 /**
+ * bundle CSS
+ */
+gulp.task('bundle-css', function() {
+    return gulp.src(config.cssFiles)
+        .pipe(gulp.dest('./www/built/local/'));
+});
+
+/**
  * Bundle jquery libs
  */
 gulp.task('bundle-jquery', function () {

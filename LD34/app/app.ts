@@ -1,41 +1,25 @@
 ﻿/// <reference path="../typings/phaser.d.ts" />
 
-class Greeter {
-    element: HTMLElement;
-    span: HTMLElement;
-    timerToken: number;
+class Game {
+    game: Phaser.Game;
 
-    constructor(element: HTMLElement) {
-        this.element = element;
-        this.element.innerHTML += "The time is: ";
-        this.span = document.createElement('span');
-        this.element.appendChild(this.span);
-        this.span.innerText = new Date().toUTCString();
+    constructor(public width: number, public height: number) {
+        this.game = new Phaser.Game(width, height, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
     }
 
-    start() {
-        this.timerToken = setInterval(() => this.span.innerHTML = new Date().toUTCString(), 500);
+    preload() {
+        
     }
 
-    stop() {
-        clearTimeout(this.timerToken);
+    create() {
+        
     }
 
+    update() {
+        
+    }
 }
 
 window.onload = () => {
-    var el = document.getElementById('content');
-    var greeter = new Greeter(el);
-    greeter.start();
-
-    var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-
-    function preload() {
-    }
-
-    function create() {
-    }
-
-    function update() {
-    }
+    var game = new Game(800, 600);
 };

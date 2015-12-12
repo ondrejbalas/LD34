@@ -1,30 +1,18 @@
-var Greeter = (function () {
-    function Greeter(element) {
-        this.element = element;
-        this.element.innerHTML += "The time is: ";
-        this.span = document.createElement('span');
-        this.element.appendChild(this.span);
-        this.span.innerText = new Date().toUTCString();
+var Game = (function () {
+    function Game(width, height) {
+        this.width = width;
+        this.height = height;
+        this.game = new Phaser.Game(width, height, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
     }
-    Greeter.prototype.start = function () {
-        var _this = this;
-        this.timerToken = setInterval(function () { return _this.span.innerHTML = new Date().toUTCString(); }, 500);
+    Game.prototype.preload = function () {
     };
-    Greeter.prototype.stop = function () {
-        clearTimeout(this.timerToken);
+    Game.prototype.create = function () {
     };
-    return Greeter;
+    Game.prototype.update = function () {
+    };
+    return Game;
 })();
 window.onload = function () {
-    var el = document.getElementById('content');
-    var greeter = new Greeter(el);
-    greeter.start();
-    var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
-    function preload() {
-    }
-    function create() {
-    }
-    function update() {
-    }
+    var game = new Game(800, 600);
 };
 //# sourceMappingURL=vscompiled.ts.map
