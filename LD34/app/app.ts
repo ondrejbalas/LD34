@@ -27,6 +27,9 @@ class App {
         var rightArea = new PlayArea(this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys);
         App.register(rightArea);
 
+        leftKeys.otherInput = rightKeys;
+        rightKeys.otherInput = leftKeys;
+
         var scoreArea = new ScoreArea(this.game, playAreaWidth, 0, spacerSize, this.game.height);
         App.register(scoreArea);
 

@@ -15,6 +15,8 @@ var App = (function () {
         var rightKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.LEFT), kb.addKey(Phaser.Keyboard.RIGHT));
         var rightArea = new PlayArea(this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys);
         App.register(rightArea);
+        leftKeys.otherInput = rightKeys;
+        rightKeys.otherInput = leftKeys;
         var scoreArea = new ScoreArea(this.game, playAreaWidth, 0, spacerSize, this.game.height);
         App.register(scoreArea);
         _.each(App.objects, function (o) { return o.preload(); });
@@ -117,11 +119,20 @@ var PlayerInput = (function () {
         this.leftKey = leftKey;
         this.rightKey = rightKey;
     }
+    PlayerInput.prototype.isKeyPressed = function () {
+        return (this.leftKey.isDown || this.rightKey.isDown);
+    };
+    PlayerInput.prototype.otherInputHasKeyPressed = function () {
+        if (!this.otherInput) {
+            return true;
+        }
+        return this.otherInput.isKeyPressed();
+    };
     PlayerInput.prototype.isLeft = function () {
-        return (this.leftKey.isDown);
+        return this.otherInputHasKeyPressed() && (this.leftKey.isDown);
     };
     PlayerInput.prototype.isRight = function () {
-        return (this.rightKey.isDown);
+        return this.otherInputHasKeyPressed() && (this.rightKey.isDown);
     };
     return PlayerInput;
 })();
