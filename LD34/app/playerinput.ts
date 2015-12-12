@@ -4,7 +4,7 @@ class PlayerInput {
     public otherInput: PlayerInput;
 
     constructor(private leftKey: Phaser.Key, private rightKey: Phaser.Key) {
-        
+
     }
 
     public isKeyPressed(): boolean {
@@ -19,10 +19,16 @@ class PlayerInput {
     }
 
     public isLeft(): boolean {
-        return this.otherInputHasKeyPressed() && (this.leftKey.isDown);
+        if (App.requireTwoInputs) {
+            return this.otherInputHasKeyPressed() && (this.leftKey.isDown);
+        }
+        return this.leftKey.isDown;
     }
 
     public isRight(): boolean {
-        return this.otherInputHasKeyPressed() && (this.rightKey.isDown);
+        if (App.requireTwoInputs) {
+            return this.otherInputHasKeyPressed() && (this.rightKey.isDown);
+        }
+        return this.rightKey.isDown;
     }
 }

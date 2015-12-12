@@ -10,17 +10,19 @@ class PlayArea implements IGameObject {
     }
 
     preload(): void {
-        this.g = this.game.add.graphics(this.x, this.y);
     }
 
     create(): void {
-        this.player = new Player(this);
-        App.register(this.player);       
+        this.g = this.game.add.graphics(this.x, this.y);
+
+        this.player = new Player(this, this.game);
+
+        App.register(this.player);
     }
     
     update(): void {
         this.g.clear();
-        
+
         this.g.lineStyle(6, this.playAreaColor, 1);
         this.g.beginFill(this.playAreaColor, 1);
         this.g.drawRect(0 + 3, 0 + 3, this.width - 6, this.height - 6);

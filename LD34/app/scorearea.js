@@ -10,7 +10,8 @@ var ScoreArea = (function () {
     ScoreArea.prototype.preload = function () {
         this.g = this.game.add.graphics(this.x, this.y);
     };
-    ScoreArea.prototype.create = function () { };
+    ScoreArea.prototype.create = function () {
+    };
     ScoreArea.prototype.update = function () {
         this.g.lineStyle(0);
         this.g.beginFill(this.bgColor, 1);

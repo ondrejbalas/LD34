@@ -9,10 +9,10 @@ var PlayArea = (function () {
         this.playAreaColor = 0x000000;
     }
     PlayArea.prototype.preload = function () {
-        this.g = this.game.add.graphics(this.x, this.y);
     };
     PlayArea.prototype.create = function () {
-        this.player = new Player(this);
+        this.g = this.game.add.graphics(this.x, this.y);
+        this.player = new Player(this, this.game);
         App.register(this.player);
     };
     PlayArea.prototype.update = function () {

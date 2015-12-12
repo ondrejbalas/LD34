@@ -13,10 +13,16 @@ var PlayerInput = (function () {
         return this.otherInput.isKeyPressed();
     };
     PlayerInput.prototype.isLeft = function () {
-        return this.otherInputHasKeyPressed() && (this.leftKey.isDown);
+        if (App.requireTwoInputs) {
+            return this.otherInputHasKeyPressed() && (this.leftKey.isDown);
+        }
+        return this.leftKey.isDown;
     };
     PlayerInput.prototype.isRight = function () {
-        return this.otherInputHasKeyPressed() && (this.rightKey.isDown);
+        if (App.requireTwoInputs) {
+            return this.otherInputHasKeyPressed() && (this.rightKey.isDown);
+        }
+        return this.rightKey.isDown;
     };
     return PlayerInput;
 })();

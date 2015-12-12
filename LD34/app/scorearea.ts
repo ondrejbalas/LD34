@@ -9,7 +9,9 @@
         this.g = this.game.add.graphics(this.x, this.y);
     }
 
-    create(): void {}
+    create(): void {
+
+    }
 
     update(): void {
         this.g.lineStyle(0);
