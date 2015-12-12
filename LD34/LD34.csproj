@@ -34,6 +34,8 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app\app.ts" />
+    <TypeScriptCompile Include="app\playarea.ts" />
+    <TypeScriptCompile Include="app\player.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="package.json" />
