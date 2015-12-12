@@ -26,7 +26,7 @@
     <Content Include="gulpfile.config.js" />
     <Content Include="gulpfile.js" />
     <Content Include="www\built\local\app.css" />
-    <Content Include="www\index.html" />
+    <Content Include="index.html" />
     <Content Include="web.config" />
     <Content Include="www\built\local\tsc.js" />
     <Content Include="www\scripts\libs\jquery\jquery-bundle.min.js" />
@@ -43,6 +43,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="package.json" />
+    <None Include="Azure.pubxml" />
+    <None Include="obalas-ld34 - Web Deploy.pubxml" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
@@ -94,6 +96,8 @@
     <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
     <TypeScriptMapRoot />
     <TypeScriptSourceRoot />
+    <FilesToIncludeForPublish>OnlyFilesToRunTheApp</FilesToIncludeForPublish>
+    <PublishDatabases>false</PublishDatabases>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
