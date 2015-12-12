@@ -4,12 +4,16 @@
 class App {
     private game: Phaser.Game;
     private static objects: Array<IGameObject> = [];
+    private static ranPreload: boolean = false;
+    private static ranCreate: boolean = false;
 
     constructor(public width: number, public height: number) {
         this.game = new Phaser.Game(width, height, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
     }
 
     preload() {
+        App.ranPreload = true;
+
         var leftArea = new PlayArea(this.game, 0, 0, 600, 600);
         App.register(leftArea);
 
@@ -20,7 +24,7 @@ class App {
     }
 
     create() {
-        
+        App.ranCreate = true;
 
         _.each(App.objects, o => o.create());
     }
@@ -33,6 +37,12 @@ class App {
 
     public static register(obj: IGameObject) {
         this.objects.push(obj);
+        if (App.ranPreload) {
+            obj.preload();
+        }
+        if (App.ranCreate) {
+            obj.create();
+        }
     }
 }
 

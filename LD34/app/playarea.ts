@@ -2,21 +2,20 @@
 
 class PlayArea implements IGameObject {
     public player: Player;
+    public g: Phaser.Graphics;
 
-    constructor(private game: Phaser.Game, private x: number, private y: number, private width: number, private height: number) {
+    constructor(private game: Phaser.Game, public x: number, public y: number, public width: number, public height: number) {
         
     }
 
     preload(): void { }
 
     create():void {
-        this.player = new Player(this.game, this);
+        this.g = this.game.add.graphics(this.x, this.y);
+        this.g.lineStyle(6, 0x666666, 1);
+        this.g.drawRect(0 + 3, 0 + 3, this.width - 6, this.height - 6);
 
-        var g = this.game.add.graphics(this.x, this.y);
-        g.lineStyle(6, 0x666666, 1);
-        console.log("Creating rectangle with X: " + this.x);
-        g.drawRect(0 + 3, 0 + 3, this.width - 6, this.height - 6);
-
+        this.player = new Player(this);
         App.register(this.player);       
     }
     
