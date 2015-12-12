@@ -1,11 +1,13 @@
 ﻿/// <reference path="../typings/phaser.d.ts" />
 
-class Player {
+class Player implements IGameObject {
     constructor(game: Phaser.Game, playArea: PlayArea) {
         
     }
 
-    create() {
-        
-    }
+    create(): void {}
+
+    preload(): void {}
+
+    update(): void {}
 }

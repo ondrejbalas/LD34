@@ -22,6 +22,7 @@
   "dependencies": {
     "jquery": "^2.1.4",
     "path": "^0.11.14",
-    "phaser": "^2.4.4"
+    "phaser": "^2.4.4",
+    "underscore": "^1.8.3"
   }
 }

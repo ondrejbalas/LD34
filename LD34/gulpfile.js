@@ -102,8 +102,18 @@ gulp.task('bundle-phaser', function() {
 });
 
 /**
+ * Bundle underscore
+ */
+gulp.task('bundle-underscore', function() {
+    return gulp.src('./node_modules/underscore/underscore-min.js')
+        .pipe(concat('underscore-bundle.min.js'))
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest('./www/scripts/libs/underscore/'));
+});
+
+/**
 *  Bundle the vendor libs
 */
-gulp.task('bundle-lib', ['bundle-phaser', 'bundle-jquery']);
+gulp.task('bundle-lib', ['bundle-phaser', 'bundle-underscore', 'bundle-jquery']);
 
 gulp.task('default', ['ts-lint', 'compile-ts', 'compress-app-js', 'cleanup-js', 'bundle-lib']);
