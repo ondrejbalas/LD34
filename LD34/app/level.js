@@ -1,8 +1,10 @@
 var Level = (function () {
     function Level() {
     }
-    Level.create = function (speed, lines, lineWidth, goodDropRate, badDropRate, obstacleRate, maxObstaclesPerLine) {
+    Level.create = function (background, speed, lines, lineWidth, goodDropRate, badDropRate, obstacleRate, maxObstaclesPerLine) {
         var lv = new Level();
+        lv.background = background;
+        lv.speed = speed;
         lv.data = [];
         var blankLines = lineWidth * 2;
         for (var i = 0; i < blankLines; i++) {
@@ -20,8 +22,9 @@ var Level = (function () {
             this.fillLine(line, 2, goodDropsInRow);
             this.fillLine(line, 3, badDropsInRow);
             this.fillLine(line, 1, obstaclesInRow);
+            lv.data.push(line);
         }
-        return new Level();
+        return lv;
     };
     Level.fillLine = function (line, fillValue, valuesToFill) {
         var emptySquares = 0;

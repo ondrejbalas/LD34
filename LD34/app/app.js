@@ -1,7 +1,5 @@
 var App = (function () {
     function App(width, height) {
-        this.width = width;
-        this.height = height;
         this.game = new Phaser.Game(width, height, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
     }
     App.prototype.preload = function () {

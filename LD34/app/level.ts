@@ -3,9 +3,12 @@
 class Level {
     public speed: number;
     public data: Uint8Array[]; // 0 = empty, 1 = obstacle, 2 = good drop, 3 = bad drop
+    public background: Background;
 
-    public static create(speed: number, lines: number, lineWidth: number, goodDropRate: number, badDropRate: number, obstacleRate: number, maxObstaclesPerLine: number): Level {
+    public static create(background: Background, speed: number, lines: number, lineWidth: number, goodDropRate: number, badDropRate: number, obstacleRate: number, maxObstaclesPerLine: number): Level {
         var lv = new Level();
+        lv.background = background;
+        lv.speed = speed;
         lv.data = [];
 
         // A certain number of lines is left blank so the player can 'get started' before things start spawning
@@ -37,8 +40,10 @@ class Level {
             this.fillLine(line, 2, goodDropsInRow);
             this.fillLine(line, 3, badDropsInRow);
             this.fillLine(line, 1, obstaclesInRow);
+
+            lv.data.push(line);
         }
-        return new Level();
+        return lv;
     }
 
     private static fillLine(line: Uint8Array, fillValue: number, valuesToFill: number) {

@@ -36,8 +36,11 @@
   <ItemGroup>
     <TypeScriptCompile Include="app\abstract\IGameObject.ts" />
     <TypeScriptCompile Include="app\app.ts" />
+    <TypeScriptCompile Include="app\background.ts" />
+    <TypeScriptCompile Include="app\enum\theme.ts" />
     <TypeScriptCompile Include="app\level.ts" />
     <TypeScriptCompile Include="app\levelfactory.ts" />
+    <TypeScriptCompile Include="app\lib\perlin.ts" />
     <TypeScriptCompile Include="app\playarea.ts" />
     <TypeScriptCompile Include="app\player.ts" />
     <TypeScriptCompile Include="app\playerinput.ts" />

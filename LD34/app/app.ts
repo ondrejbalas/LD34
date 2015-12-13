@@ -8,7 +8,7 @@ class App {
     private static ranCreate: boolean = false;
     public static requireTwoInputs: boolean = false;
 
-    constructor(public width: number, public height: number) {
+    constructor(width: number, height: number) {
         this.game = new Phaser.Game(width, height, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
     }
 
