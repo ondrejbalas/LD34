@@ -45,7 +45,7 @@ var App = (function () {
     return App;
 })();
 window.onload = function () {
-    var app = new App(1000, 600);
+    var app = new App(1400, 800);
 };
 var Background = (function () {
     function Background(color1, color2, color3, color4) {
@@ -66,7 +66,7 @@ var Background = (function () {
             case Theme.Nebula:
                 return new Background(0x202A52, 0xE46F58, 0x85BEE1, 0x483548);
             case Theme.Random:
-                return new Background(randomColor(44), randomColor(192), randomColor(128), randomColor(64));
+                return new Background(randomColor(0.22), randomColor(.4), randomColor(.7), randomColor(.22));
             default:
                 return new Background(randomColor(44), randomColor(192), randomColor(128), randomColor(64));
         }
@@ -107,29 +107,30 @@ var Background = (function () {
     Background.prototype.makeImages = function (game, width, height) {
         var datas = [];
         var key1 = 'perlin:1:' + this.color1;
+        var pz1 = Math.random();
+        var px1 = Math.random() * width;
+        var py1 = Math.random() * height;
         if (game.cache.checkBitmapDataKey(key1)) {
             datas.push(game.cache.getBitmapData(key1));
-            console.log("loaded texture '" + key1 + "' from cache");
         }
         else {
-            console.log("creating texture '" + key1 + "' with dimensions " + width + "x" + height);
             var data1 = game.add.bitmapData(width, height, key1, true);
             var scale1 = 1 / 4;
             var scale2 = 1 / 2;
             for (var x1 = 0; x1 < width; x1++) {
                 for (var y1 = 0; y1 < height; y1++) {
-                    var perlinValue1 = PerlinNoise.noise(scale1 * x1, scale1 * (Math.min(y1, height - y1)), .5);
-                    var perlinValue2 = PerlinNoise.noise(scale2 * x1, scale2 * (Math.min(y1, height - y1)), .5);
+                    var perlinValue1 = PerlinNoise.noise(px1 + scale1 * x1, py1 + scale1 * (Math.min(y1, height - y1)), pz1);
+                    var perlinValue2 = PerlinNoise.noise(px1 + scale2 * x1, py1 + scale2 * (Math.min(y1, height - y1)), pz1);
                     if (perlinValue1 < 0.8 && perlinValue2 > 0.26) {
                         var faded1 = this.shadeColor(this.color1, -perlinValue1);
                         data1.setPixel32(x1, y1, faded1[0], faded1[1], faded1[2], 255, false);
                     }
                     else if (perlinValue1 > 0.4 && perlinValue2 < 0.6) {
-                        var faded2 = this.shadeColor(this.color2, perlinValue2);
+                        var faded2 = this.shadeColor(this.color2, perlinValue2 - 0.6);
                         data1.setPixel32(x1, y1, faded2[0], faded2[1], faded2[2], 255, false);
                     }
                     else {
-                        var merged = this.blendColor(this.color1, this.color2, -perlinValue1);
+                        var merged = this.blendColor(this.color1, this.color2, perlinValue1);
                         data1.setPixel32(x1, y1, merged[0], merged[1], merged[2], 255, false);
                     }
                 }
@@ -138,17 +139,18 @@ var Background = (function () {
             datas.push(data1);
         }
         var key3 = 'perlin:3:' + this.color3;
+        var pz3 = Math.random();
+        var px3 = Math.random() * width;
+        var py3 = Math.random() * height;
         if (game.cache.checkBitmapDataKey(key3)) {
             datas.push(game.cache.getBitmapData(key3));
-            console.log("loaded texture '" + key3 + "' from cache");
         }
         else {
-            console.log("creating texture '" + key3 + "' with dimensions " + width + "x" + height);
             var data3 = game.add.bitmapData(width, height, key3, true);
             var scale3 = 1 / 6;
             for (var x3 = 0; x3 < width; x3++) {
                 for (var y3 = 0; y3 < height; y3++) {
-                    var perlinValue = PerlinNoise.noise(scale3 * x3, scale3 * (Math.min(y3, height - y3)), .5);
+                    var perlinValue = PerlinNoise.noise(px3 + scale3 * x3, py3 + scale3 * (Math.min(y3, height - y3)), pz3);
                     if (Math.floor(perlinValue * 100) % 3 === 0 && perlinValue > 0.5) {
                         var faded = this.shadeColor(this.color3, perlinValue * 2 - 1);
                         data3.setPixel32(x3, y3, faded[0], faded[1], faded[2], 64, false);
@@ -240,7 +242,7 @@ var LevelFactory = (function () {
     LevelFactory.createLevel = function (level) {
         switch (level) {
             case 1:
-                return Level.create(Background.fromTheme(Theme.NorthernLights), 20, 60, 14, 0.05, 0.05, 1.2, 2);
+                return Level.create(Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
             default:
         }
     };
@@ -254,7 +256,7 @@ var PlayArea = (function () {
         this.width = width;
         this.height = height;
         this.input = input;
-        this.playAreaColor = 0x000000;
+        this.counter = 0;
     }
     PlayArea.prototype.setLevel = function (level) {
         this.currentLevel = level;
@@ -264,7 +266,6 @@ var PlayArea = (function () {
     PlayArea.prototype.preload = function () {
     };
     PlayArea.prototype.create = function () {
-        this.g = this.game.add.graphics(this.x, this.y);
         var bgImages = this.bg.makeImages(this.game, this.width / 4, this.height / 4);
         this.bgSprite1 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[0]);
         this.bgSprite1.tileScale.x = 4;
@@ -277,7 +278,7 @@ var PlayArea = (function () {
     };
     PlayArea.prototype.update = function () {
         var delta = (this.game.time.elapsedMS / 1000);
-        var speed = 16;
+        var speed = 32;
         this.bgSprite1.tilePosition.y += delta * (speed / 2);
         this.bgSprite2.tilePosition.y += delta * (speed * 2);
     };
@@ -307,7 +308,6 @@ var Player = (function () {
         this.body = this.sprite.body;
         this.body.x = this.startX;
         this.body.y = this.startY;
-        this.g = this.playArea.g;
         this.input = this.playArea.input;
     };
     Player.prototype.update = function () {
@@ -330,10 +330,6 @@ var Player = (function () {
             this.isColorIncreasing = 32;
             this.color = this.minColor;
         }
-        this.g.lineStyle(2, this.color, 1);
-        this.g.beginFill(this.color, 1);
-        this.g.drawTriangle([new Phaser.Point(this.body.x - this.frameSize, this.body.y), new Phaser.Point(this.body.x, this.body.y - (this.frameSize * 1.5)), new Phaser.Point(this.body.x + this.frameSize, this.body.y)], false);
-        this.g.endFill();
     };
     return Player;
 })();
@@ -378,15 +374,24 @@ var ScoreArea = (function () {
         this.g = this.game.add.graphics(this.x, this.y);
     };
     ScoreArea.prototype.create = function () {
-    };
-    ScoreArea.prototype.update = function () {
         this.g.lineStyle(0);
         this.g.beginFill(this.bgColor, 1);
         this.g.drawRect(0, 0, this.width, this.height);
         this.g.endFill();
     };
+    ScoreArea.prototype.update = function () {
+    };
     return ScoreArea;
 })();
+var Theme;
+(function (Theme) {
+    Theme[Theme["NorthernLights"] = 0] = "NorthernLights";
+    Theme[Theme["Nebula"] = 1] = "Nebula";
+    Theme[Theme["TealParty"] = 2] = "TealParty";
+    Theme[Theme["Daisies"] = 3] = "Daisies";
+    Theme[Theme["Random"] = 4] = "Random";
+})(Theme || (Theme = {}));
+;
 var PerlinNoise = (function () {
     function PerlinNoise() {
     }
@@ -428,14 +433,5 @@ var PerlinNoise = (function () {
     PerlinNoise.scale = function (n) { return (1 + n) / 2; };
     return PerlinNoise;
 })();
-var Theme;
-(function (Theme) {
-    Theme[Theme["NorthernLights"] = 0] = "NorthernLights";
-    Theme[Theme["Nebula"] = 1] = "Nebula";
-    Theme[Theme["TealParty"] = 2] = "TealParty";
-    Theme[Theme["Daisies"] = 3] = "Daisies";
-    Theme[Theme["Random"] = 4] = "Random";
-})(Theme || (Theme = {}));
-;
 
 //# sourceMappingURL=tsc.js.map

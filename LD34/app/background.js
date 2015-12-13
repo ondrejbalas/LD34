@@ -17,7 +17,7 @@ var Background = (function () {
             case Theme.Nebula:
                 return new Background(0x202A52, 0xE46F58, 0x85BEE1, 0x483548);
             case Theme.Random:
-                return new Background(randomColor(44), randomColor(192), randomColor(128), randomColor(64));
+                return new Background(randomColor(0.22), randomColor(.4), randomColor(.7), randomColor(.22));
             default:
                 return new Background(randomColor(44), randomColor(192), randomColor(128), randomColor(64));
         }
@@ -58,29 +58,30 @@ var Background = (function () {
     Background.prototype.makeImages = function (game, width, height) {
         var datas = [];
         var key1 = 'perlin:1:' + this.color1;
+        var pz1 = Math.random();
+        var px1 = Math.random() * width;
+        var py1 = Math.random() * height;
         if (game.cache.checkBitmapDataKey(key1)) {
             datas.push(game.cache.getBitmapData(key1));
-            console.log("loaded texture '" + key1 + "' from cache");
         }
         else {
-            console.log("creating texture '" + key1 + "' with dimensions " + width + "x" + height);
             var data1 = game.add.bitmapData(width, height, key1, true);
             var scale1 = 1 / 4;
             var scale2 = 1 / 2;
             for (var x1 = 0; x1 < width; x1++) {
                 for (var y1 = 0; y1 < height; y1++) {
-                    var perlinValue1 = PerlinNoise.noise(scale1 * x1, scale1 * (Math.min(y1, height - y1)), .5);
-                    var perlinValue2 = PerlinNoise.noise(scale2 * x1, scale2 * (Math.min(y1, height - y1)), .5);
+                    var perlinValue1 = PerlinNoise.noise(px1 + scale1 * x1, py1 + scale1 * (Math.min(y1, height - y1)), pz1);
+                    var perlinValue2 = PerlinNoise.noise(px1 + scale2 * x1, py1 + scale2 * (Math.min(y1, height - y1)), pz1);
                     if (perlinValue1 < 0.8 && perlinValue2 > 0.26) {
                         var faded1 = this.shadeColor(this.color1, -perlinValue1);
                         data1.setPixel32(x1, y1, faded1[0], faded1[1], faded1[2], 255, false);
                     }
                     else if (perlinValue1 > 0.4 && perlinValue2 < 0.6) {
-                        var faded2 = this.shadeColor(this.color2, perlinValue2);
+                        var faded2 = this.shadeColor(this.color2, perlinValue2 - 0.6);
                         data1.setPixel32(x1, y1, faded2[0], faded2[1], faded2[2], 255, false);
                     }
                     else {
-                        var merged = this.blendColor(this.color1, this.color2, -perlinValue1);
+                        var merged = this.blendColor(this.color1, this.color2, perlinValue1);
                         data1.setPixel32(x1, y1, merged[0], merged[1], merged[2], 255, false);
                     }
                 }
@@ -89,17 +90,18 @@ var Background = (function () {
             datas.push(data1);
         }
         var key3 = 'perlin:3:' + this.color3;
+        var pz3 = Math.random();
+        var px3 = Math.random() * width;
+        var py3 = Math.random() * height;
         if (game.cache.checkBitmapDataKey(key3)) {
             datas.push(game.cache.getBitmapData(key3));
-            console.log("loaded texture '" + key3 + "' from cache");
         }
         else {
-            console.log("creating texture '" + key3 + "' with dimensions " + width + "x" + height);
             var data3 = game.add.bitmapData(width, height, key3, true);
             var scale3 = 1 / 6;
             for (var x3 = 0; x3 < width; x3++) {
                 for (var y3 = 0; y3 < height; y3++) {
-                    var perlinValue = PerlinNoise.noise(scale3 * x3, scale3 * (Math.min(y3, height - y3)), .5);
+                    var perlinValue = PerlinNoise.noise(px3 + scale3 * x3, py3 + scale3 * (Math.min(y3, height - y3)), pz3);
                     if (Math.floor(perlinValue * 100) % 3 === 0 && perlinValue > 0.5) {
                         var faded = this.shadeColor(this.color3, perlinValue * 2 - 1);
                         data3.setPixel32(x3, y3, faded[0], faded[1], faded[2], 64, false);

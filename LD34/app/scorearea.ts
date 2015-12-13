@@ -10,13 +10,13 @@
     }
 
     create(): void {
-
-    }
-
-    update(): void {
         this.g.lineStyle(0);
         this.g.beginFill(this.bgColor, 1);
         this.g.drawRect(0, 0, this.width, this.height);
         this.g.endFill();
+    }
+
+    update(): void {
+
     }
 }

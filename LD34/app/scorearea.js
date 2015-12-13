@@ -11,12 +11,12 @@ var ScoreArea = (function () {
         this.g = this.game.add.graphics(this.x, this.y);
     };
     ScoreArea.prototype.create = function () {
-    };
-    ScoreArea.prototype.update = function () {
         this.g.lineStyle(0);
         this.g.beginFill(this.bgColor, 1);
         this.g.drawRect(0, 0, this.width, this.height);
         this.g.endFill();
+    };
+    ScoreArea.prototype.update = function () {
     };
     return ScoreArea;
 })();

@@ -45,5 +45,5 @@ var App = (function () {
     return App;
 })();
 window.onload = function () {
-    var app = new App(1000, 600);
+    var app = new App(1400, 800);
 };

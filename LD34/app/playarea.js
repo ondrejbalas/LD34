@@ -6,7 +6,7 @@ var PlayArea = (function () {
         this.width = width;
         this.height = height;
         this.input = input;
-        this.playAreaColor = 0x000000;
+        this.counter = 0;
     }
     PlayArea.prototype.setLevel = function (level) {
         this.currentLevel = level;
@@ -16,7 +16,6 @@ var PlayArea = (function () {
     PlayArea.prototype.preload = function () {
     };
     PlayArea.prototype.create = function () {
-        this.g = this.game.add.graphics(this.x, this.y);
         var bgImages = this.bg.makeImages(this.game, this.width / 4, this.height / 4);
         this.bgSprite1 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[0]);
         this.bgSprite1.tileScale.x = 4;
@@ -29,7 +28,7 @@ var PlayArea = (function () {
     };
     PlayArea.prototype.update = function () {
         var delta = (this.game.time.elapsedMS / 1000);
-        var speed = 16;
+        var speed = 32;
         this.bgSprite1.tilePosition.y += delta * (speed / 2);
         this.bgSprite2.tilePosition.y += delta * (speed * 2);
     };

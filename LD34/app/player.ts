@@ -31,6 +31,7 @@ class Player implements IGameObject {
     }
 
     create(): void {
+        //console.log("creating player");
         this.sprite = new Phaser.Sprite(this.game, this.startX, this.startY);
         this.game.add.existing(this.sprite);
         this.game.physics.arcade.enable(this.sprite);
@@ -38,7 +39,6 @@ class Player implements IGameObject {
         
         this.body.x = this.startX;
         this.body.y = this.startY;
-        this.g = this.playArea.g;
         this.input = this.playArea.input;
     }
 
@@ -68,10 +68,5 @@ class Player implements IGameObject {
             this.isColorIncreasing = 32;
             this.color = this.minColor;
         }
-
-        this.g.lineStyle(2, this.color, 1);
-        this.g.beginFill(this.color, 1);
-        this.g.drawTriangle([new Phaser.Point(this.body.x - this.frameSize, this.body.y), new Phaser.Point(this.body.x, this.body.y - (this.frameSize * 1.5)), new Phaser.Point(this.body.x + this.frameSize, this.body.y)], false);
-        this.g.endFill();
     }
 }

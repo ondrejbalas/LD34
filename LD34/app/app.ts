@@ -10,6 +10,7 @@ class App {
 
     constructor(width: number, height: number) {
         this.game = new Phaser.Game(width, height, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
+        //this.game.time.desiredFps = 60;
     }
 
     preload() {
@@ -51,7 +52,6 @@ class App {
 
     update() {
 
-
         _.each(App.objects, o => o.update());
     }
 
@@ -67,5 +67,5 @@ class App {
 }
 
 window.onload = () => {
-    var app = new App(1000, 600);
+    var app = new App(1400, 800);
 };
