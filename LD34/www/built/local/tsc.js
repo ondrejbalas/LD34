@@ -74,11 +74,11 @@ var Background = (function () {
         for (var x1 = 0; x1 < width; x1++) {
             for (var y1 = 0; y1 < height; y1++) {
                 var perlinValue = PerlinNoise.noise(scale1 * x1, scale1 * (Math.min(y1, height - y1)), .5);
-                var faded = this.shadeColor(this.color1, (perlinValue * 1.6) - 1);
+                var faded = this.shadeColor(this.color1, (perlinValue * .5) - .5);
                 data1.setPixel32(x1, y1, faded[0], faded[1], faded[2], 255, false);
             }
         }
-        data1.setPixel32(width - 1, height - 1, 0, 0, 0, 255, true);
+        data1.context.putImageData(data1.imageData, 0, 0);
         datas.push(data1);
         var data2 = game.add.bitmapData(width, height, 'perlin:2:' + this.color2, true);
         var scale2 = 1 / 3;
@@ -89,7 +89,7 @@ var Background = (function () {
                 data2.setPixel32(x2, y2, faded[0], faded[1], faded[2], 70, false);
             }
         }
-        data2.setPixel32(width - 1, height - 1, 0, 0, 0, 255, true);
+        data2.context.putImageData(data2.imageData, 0, 0);
         datas.push(data2);
         var data3 = game.add.bitmapData(width, height, 'perlin:3:' + this.color3, true);
         var scale3 = 1 / 8;
@@ -100,7 +100,7 @@ var Background = (function () {
                 data3.setPixel32(x3, y3, faded[0], faded[1], faded[2], 90, false);
             }
         }
-        data3.setPixel32(width - 1, height - 1, 0, 0, 0, 255, true);
+        data3.context.putImageData(data3.imageData, 0, 0);
         datas.push(data3);
         var data4 = game.add.bitmapData(width, height, 'perlin:4:' + this.color4, true);
         var scale4 = 2;
@@ -108,10 +108,10 @@ var Background = (function () {
             for (var y4 = 0; y4 < height; y4++) {
                 var perlinValue = PerlinNoise.noise(scale4 * x4, scale4 * (Math.min(y4, height - y4)), .5);
                 var faded = this.shadeColor(this.color4, (perlinValue * 2.5) - 1);
-                data4.setPixel32(x4, y4, faded[0], faded[1], faded[2], 50, false);
+                data4.setPixel32(x4, y4, faded[0], faded[1], faded[2], 33, false);
             }
         }
-        data4.setPixel32(width - 1, height - 1, 0, 0, 0, 255, true);
+        data4.context.putImageData(data4.imageData, 0, 0);
         datas.push(data4);
         return datas;
     };
@@ -219,7 +219,7 @@ var PlayArea = (function () {
     };
     PlayArea.prototype.create = function () {
         this.g = this.game.add.graphics(this.x, this.y);
-        var bgImages = this.bg.makeImages(this.game, this.width / 4, this.height / 2);
+        var bgImages = this.bg.makeImages(this.game, this.width / 4, this.height / 4);
         this.bgSprite1 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[0]);
         this.bgSprite1.tileScale.x = 4;
         this.bgSprite1.tileScale.y = 4;
@@ -236,11 +236,12 @@ var PlayArea = (function () {
         App.register(this.player);
     };
     PlayArea.prototype.update = function () {
-        var speed = 0.5;
-        this.bgSprite1.tilePosition.y += speed / 2;
-        this.bgSprite2.tilePosition.y += speed * 1.5;
-        this.bgSprite3.tilePosition.y += speed * 3;
-        this.bgSprite4.tilePosition.y += speed * 8;
+        var delta = (this.game.time.elapsedMS / 1000);
+        var speed = 16;
+        this.bgSprite1.tilePosition.y += delta * (speed / 2);
+        this.bgSprite2.tilePosition.y += delta * (speed * 1.5);
+        this.bgSprite3.tilePosition.y += delta * (speed * 3);
+        this.bgSprite4.tilePosition.y += delta * (speed * 9);
     };
     return PlayArea;
 })();

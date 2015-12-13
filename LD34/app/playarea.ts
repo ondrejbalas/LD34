@@ -29,7 +29,7 @@ class PlayArea implements IGameObject {
     create(): void {
         this.g = this.game.add.graphics(this.x, this.y);
 
-        var bgImages = this.bg.makeImages(this.game, this.width / 4, this.height / 2);
+        var bgImages = this.bg.makeImages(this.game, this.width / 4, this.height / 4);
         this.bgSprite1 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[0]);
         this.bgSprite1.tileScale.x = 4;
         this.bgSprite1.tileScale.y = 4;
@@ -49,17 +49,11 @@ class PlayArea implements IGameObject {
     }
     
     update(): void {
-        var speed = 0.5;
-        this.bgSprite1.tilePosition.y += speed/2;
-        this.bgSprite2.tilePosition.y += speed * 1.5;
-        this.bgSprite3.tilePosition.y += speed * 3;
-        this.bgSprite4.tilePosition.y += speed * 8;
-
-        //this.g.clear();
-
-        //this.g.lineStyle(6, this.playAreaColor, 1);
-        //this.g.beginFill(this.playAreaColor, 1);
-        //this.g.drawRect(0 + 3, 0 + 3, this.width - 6, this.height - 6);
-        //this.g.endFill();
+        var delta = (this.game.time.elapsedMS / 1000);
+        var speed = 16;
+        this.bgSprite1.tilePosition.y += delta * (speed/2);
+        this.bgSprite2.tilePosition.y += delta * (speed * 1.5);
+        this.bgSprite3.tilePosition.y += delta * (speed * 3);
+        this.bgSprite4.tilePosition.y += delta * (speed * 9);
     }
 }
