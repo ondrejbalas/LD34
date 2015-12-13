@@ -2,7 +2,7 @@
     public static createLevel(playArea: PlayArea, game: Phaser.Game, level: number): Level {
         switch (level) {
         case 1:
-            return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
+            return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 60, 14, 0.05, 0.05, 0.25, 1);
         default:
             return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
         }
@@ -16,7 +16,7 @@
         lv.lineWidth = lineWidth;
 
         // A certain number of lines is left blank so the player can 'get started' before things start spawning
-        var blankLines = lineWidth * 2;
+        var blankLines = Math.ceil(playArea.height * (lineWidth / playArea.width));
 
         // push the blank lines onto the array
         for (var i = 0; i < blankLines; i++) {
@@ -35,7 +35,6 @@
 
             // Get a new empty row
             var line = this.createEmptyLine(lineWidth);
-            var emptySquares = lineWidth - 2;
 
             var goodDropsInRow = this.howManyInThisRow(j, goodDropRate, goodDrops, 1);
             var badDropsInRow = this.howManyInThisRow(j, badDropRate, badDrops, 1);
@@ -45,7 +44,15 @@
             this.fillLine(line, 3, badDropsInRow);
             this.fillLine(line, 1, obstaclesInRow);
 
+            goodDrops += goodDropsInRow;
+            badDrops += badDropsInRow;
+            obstacles += obstaclesInRow;
+
             lv.data.push(line);
+        }
+
+        for (var i = 0; i < blankLines; i++) {
+            lv.data.push(this.createEmptyLine(lineWidth));
         }
         return lv;
     }
@@ -55,13 +62,13 @@
         for (var i = 0; i < line.length; i++) {
             if (line[i] === 0) emptySquares++;
         }
-
         while (valuesToFill > 0 && emptySquares >> 0) {
             var x = 0;
             do {
                 x = Math.floor(Math.random() * (line.length + 1));
             } while (line[x] !== 0)
-            line[x] = 2;
+            line[x] = fillValue;
+            valuesToFill--;
         }
     }
 
@@ -86,6 +93,6 @@
             returnCounter++;
             probability -= 0.25;
         }
-        return 0;
+        return returnCounter;
     }
 }

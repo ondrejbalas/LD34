@@ -12,12 +12,12 @@ var App = (function () {
         var playAreaWidth = (this.game.width - spacerSize) / 2;
         var kb = this.game.input.keyboard;
         var leftKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.A), kb.addKey(Phaser.Keyboard.D));
-        var leftArea = new PlayArea(this.game, 0, 0, playAreaWidth, this.game.height, leftKeys);
+        var leftArea = new PlayArea(0, this.game, 0, 0, playAreaWidth, this.game.height, leftKeys);
         leftArea.setLevel(LevelFactory.createLevel(leftArea, this.game, 1));
         App.register(leftArea);
         var rightKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.LEFT), kb.addKey(Phaser.Keyboard.RIGHT));
-        var rightArea = new PlayArea(this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys);
-        rightArea.setLevel(LevelFactory.createLevel(leftArea, this.game, 1));
+        var rightArea = new PlayArea(1, this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys);
+        rightArea.setLevel(LevelFactory.createLevel(rightArea, this.game, 1));
         App.register(rightArea);
         leftKeys.otherInput = rightKeys;
         rightKeys.otherInput = leftKeys;
@@ -182,12 +182,47 @@ var Level = (function () {
         this.y = playArea.y;
     }
     Level.prototype.preload = function () { };
-    Level.prototype.create = function () {
-        var image = ObstacleImage.create(this.game, this.playArea.width / this.lineWidth);
-        var newSprite = this.game.add.sprite(this.x + 100, this.y + 100, image);
-        newSprite.z = 100000;
+    Level.prototype.create = function (layer) {
+        console.debug("creating level");
+        this.layer = layer;
+        this.position = -1;
+        this.lastSpawnedRow = -1;
+        this.objectSize = this.playArea.width / this.lineWidth;
+        this.obstacleImage = ObstacleImage.create(this.game, this.objectSize);
+        this.createInitialRows();
     };
     Level.prototype.update = function () {
+        var _this = this;
+        var delta = (this.game.time.elapsedMS / 1000);
+        this.position += delta * (this.speed / this.objectSize);
+        _.forEach(this.sprites, function (sprite) { return sprite.y += delta * _this.speed; });
+        var y = Math.ceil(this.position);
+        if (y > this.lastSpawnedRow) {
+            this.lastSpawnedRow++;
+            var row = this.data[this.lastSpawnedRow];
+            this.createRow(-this.objectSize, row);
+        }
+    };
+    Level.prototype.createInitialRows = function () {
+        var y = 0;
+        do {
+            this.position++;
+            this.lastSpawnedRow++;
+            y = this.position * this.objectSize;
+            this.createRow(y, this.data[this.lastSpawnedRow]);
+        } while (y < this.playArea.height);
+    };
+    Level.prototype.createRow = function (position, row) {
+        var rowCount = 0;
+        for (var i = 0; i < row.length; i++) {
+            if (row[i] === 1) {
+                rowCount++;
+                this.sprites.push(this.layer.create(this.x + i * this.objectSize, position, this.obstacleImage));
+            }
+        }
+    };
+    Level.prototype.destroy = function () {
+        _.forEach(this.sprites, function (sprite) { return sprite.destroy(); });
     };
     return Level;
 })();
@@ -197,7 +232,7 @@ var LevelFactory = (function () {
     LevelFactory.createLevel = function (playArea, game, level) {
         switch (level) {
             case 1:
-                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
+                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 60, 14, 0.05, 0.05, 0.25, 1);
             default:
                 return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
         }
@@ -208,7 +243,7 @@ var LevelFactory = (function () {
         lv.speed = speed;
         lv.data = [];
         lv.lineWidth = lineWidth;
-        var blankLines = lineWidth * 2;
+        var blankLines = Math.ceil(playArea.height * (lineWidth / playArea.width));
         for (var i = 0; i < blankLines; i++) {
             lv.data.push(this.createEmptyLine(lineWidth));
         }
@@ -217,14 +252,19 @@ var LevelFactory = (function () {
         var obstacles = 0;
         for (var j = 0; j < lines; j++) {
             var line = this.createEmptyLine(lineWidth);
-            var emptySquares = lineWidth - 2;
             var goodDropsInRow = this.howManyInThisRow(j, goodDropRate, goodDrops, 1);
             var badDropsInRow = this.howManyInThisRow(j, badDropRate, badDrops, 1);
             var obstaclesInRow = this.howManyInThisRow(j, obstacleRate, obstacles, maxObstaclesPerLine);
             this.fillLine(line, 2, goodDropsInRow);
             this.fillLine(line, 3, badDropsInRow);
             this.fillLine(line, 1, obstaclesInRow);
+            goodDrops += goodDropsInRow;
+            badDrops += badDropsInRow;
+            obstacles += obstaclesInRow;
             lv.data.push(line);
+        }
+        for (var i = 0; i < blankLines; i++) {
+            lv.data.push(this.createEmptyLine(lineWidth));
         }
         return lv;
     };
@@ -239,7 +279,8 @@ var LevelFactory = (function () {
             do {
                 x = Math.floor(Math.random() * (line.length + 1));
             } while (line[x] !== 0);
-            line[x] = 2;
+            line[x] = fillValue;
+            valuesToFill--;
         }
     };
     LevelFactory.createEmptyLine = function (width) {
@@ -259,12 +300,13 @@ var LevelFactory = (function () {
             returnCounter++;
             probability -= 0.25;
         }
-        return 0;
+        return returnCounter;
     };
     return LevelFactory;
 })();
 var PlayArea = (function () {
-    function PlayArea(game, x, y, width, height, input) {
+    function PlayArea(id, game, x, y, width, height, input) {
+        this.id = id;
         this.game = game;
         this.x = x;
         this.y = y;
@@ -272,10 +314,15 @@ var PlayArea = (function () {
         this.height = height;
         this.input = input;
         this.counter = 0;
+        this.bgLayer = this.game.add.group();
+        this.frontLayer = this.game.add.group();
     }
     PlayArea.prototype.setLevel = function (level) {
+        if (this.currentLevel) {
+            this.currentLevel.destroy();
+        }
         level.preload();
-        level.create();
+        level.create(this.frontLayer);
         this.currentLevel = level;
         this.playerY = 0;
         this.bg = level.background;
@@ -290,7 +337,9 @@ var PlayArea = (function () {
         this.bgSprite2 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[1]);
         this.bgSprite2.tileScale.x = 4;
         this.bgSprite2.tileScale.y = 4;
-        this.player = new Player(this, this.game);
+        this.bgLayer.add(this.bgSprite1);
+        this.bgLayer.add(this.bgSprite2);
+        this.player = new Player(this, this.game, this.frontLayer);
         App.register(this.player);
     };
     PlayArea.prototype.update = function () {
@@ -303,10 +352,11 @@ var PlayArea = (function () {
     return PlayArea;
 })();
 var Player = (function () {
-    function Player(playArea, game) {
+    function Player(playArea, game, layer) {
         this.playArea = playArea;
         this.game = game;
-        this.speed = 800;
+        this.layer = layer;
+        this.speed = 400;
         this.size = 8;
         this.startX = playArea.x + (playArea.width / 2);
         this.startY = playArea.height - 74;
@@ -316,8 +366,7 @@ var Player = (function () {
     };
     Player.prototype.create = function () {
         this.image = PlayerImage.create(this.game, 64, 64, this.size);
-        this.sprite = new Phaser.Sprite(this.game, this.startX, this.startY, this.image.data);
-        this.game.add.existing(this.sprite);
+        this.sprite = this.layer.create(this.startX, this.startY, this.image.data);
         this.game.physics.arcade.enable(this.sprite);
         this.body = this.sprite.body;
         this.sprite.anchor.x = 0.5;
@@ -408,12 +457,16 @@ var ObstacleImage = (function () {
         var factory = function () {
             console.log("creating new obstacle with key '" + key + "'");
             var data = game.add.bitmapData(size, size, key, true);
-            var grd = data.context.createRadialGradient(size * 3 / 4, size * 3 / 4, 0, size * 3 / 4, size * 3 / 4, size / 3);
-            grd.addColorStop(0, "#F4FEFD");
-            grd.addColorStop(0.1, "#D5F6FD");
-            grd.addColorStop(0.3, "#2DCAFF");
-            grd.addColorStop(0.5, "#1369C0");
-            grd.addColorStop(1.0, "#05235F");
+            var p1 = size * 5 / 8;
+            var r1 = 0;
+            var p2 = size / 2;
+            var r2 = size / 2;
+            var grd = data.context.createRadialGradient(p1, p1, r1, size * 2 / 4, size * 2 / 4, size / 2);
+            grd.addColorStop(0, "#FEF4FC");
+            grd.addColorStop(0.08, "#FFD7F0");
+            grd.addColorStop(0.22, "#FF2DA6");
+            grd.addColorStop(0.5, "#E01626");
+            grd.addColorStop(1.0, "#750C06");
             data.circle(size / 2, size / 2, size / 2, grd);
             ;
             return data;

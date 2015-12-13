@@ -1,8 +1,9 @@
 var Player = (function () {
-    function Player(playArea, game) {
+    function Player(playArea, game, layer) {
         this.playArea = playArea;
         this.game = game;
-        this.speed = 800;
+        this.layer = layer;
+        this.speed = 400;
         this.size = 8;
         this.startX = playArea.x + (playArea.width / 2);
         this.startY = playArea.height - 74;
@@ -12,8 +13,7 @@ var Player = (function () {
     };
     Player.prototype.create = function () {
         this.image = PlayerImage.create(this.game, 64, 64, this.size);
-        this.sprite = new Phaser.Sprite(this.game, this.startX, this.startY, this.image.data);
-        this.game.add.existing(this.sprite);
+        this.sprite = this.layer.create(this.startX, this.startY, this.image.data);
         this.game.physics.arcade.enable(this.sprite);
         this.body = this.sprite.body;
         this.sprite.anchor.x = 0.5;

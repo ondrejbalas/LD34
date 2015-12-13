@@ -1,5 +1,6 @@
 var PlayArea = (function () {
-    function PlayArea(game, x, y, width, height, input) {
+    function PlayArea(id, game, x, y, width, height, input) {
+        this.id = id;
         this.game = game;
         this.x = x;
         this.y = y;
@@ -7,10 +8,15 @@ var PlayArea = (function () {
         this.height = height;
         this.input = input;
         this.counter = 0;
+        this.bgLayer = this.game.add.group();
+        this.frontLayer = this.game.add.group();
     }
     PlayArea.prototype.setLevel = function (level) {
+        if (this.currentLevel) {
+            this.currentLevel.destroy();
+        }
         level.preload();
-        level.create();
+        level.create(this.frontLayer);
         this.currentLevel = level;
         this.playerY = 0;
         this.bg = level.background;
@@ -25,7 +31,9 @@ var PlayArea = (function () {
         this.bgSprite2 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[1]);
         this.bgSprite2.tileScale.x = 4;
         this.bgSprite2.tileScale.y = 4;
-        this.player = new Player(this, this.game);
+        this.bgLayer.add(this.bgSprite1);
+        this.bgLayer.add(this.bgSprite2);
+        this.player = new Player(this, this.game, this.frontLayer);
         App.register(this.player);
     };
     PlayArea.prototype.update = function () {

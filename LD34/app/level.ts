@@ -1,6 +1,8 @@
 ﻿/// <reference path="../typings/underscore/underscore.d.ts" />
 
-class Level implements IGameObject {
+class Level {
+    public position: number;
+    public lastSpawnedRow: number;
     public speed: number;
     public data: Uint8Array[]; // 0 = empty, 1 = obstacle, 2 = good drop, 3 = bad drop
     public background: Background;
@@ -8,6 +10,9 @@ class Level implements IGameObject {
     private sprites: Phaser.Sprite[] = [];
     private x: number;
     private y: number;
+    private layer: Phaser.Group;
+    private objectSize: number;
+    private obstacleImage: Phaser.BitmapData;
 
     constructor(private playArea: PlayArea, private game: Phaser.Game) {
         this.x = playArea.x;
@@ -16,13 +21,51 @@ class Level implements IGameObject {
 
     preload(): void {}
 
-    create(): void {
-        var image = ObstacleImage.create(this.game, this.playArea.width / this.lineWidth);
-        var newSprite = this.game.add.sprite(this.x + 100, this.y + 100, image);
-        newSprite.z = 100000;
+    create(layer: Phaser.Group): void {
+        console.debug("creating level");
+        this.layer = layer;
+        this.position = -1;
+        this.lastSpawnedRow = -1;
+        this.objectSize = this.playArea.width / this.lineWidth;
+        this.obstacleImage = ObstacleImage.create(this.game, this.objectSize);
+        this.createInitialRows();
     }
 
     update(): void {
-        
+        var delta = (this.game.time.elapsedMS / 1000);
+        this.position += delta * (this.speed / this.objectSize);
+        _.forEach(this.sprites, sprite => sprite.y += delta * this.speed);
+
+        var y = Math.ceil(this.position);
+        if (y > this.lastSpawnedRow) {
+            this.lastSpawnedRow++;
+
+            var row = this.data[this.lastSpawnedRow];
+            this.createRow(-this.objectSize, row);
+        }
+    }
+
+    createInitialRows() {
+        var y = 0;
+        do {
+            this.position++;
+            this.lastSpawnedRow++;
+            y = this.position * this.objectSize;
+            this.createRow(y, this.data[this.lastSpawnedRow]);
+        } while (y < this.playArea.height)
+    }
+
+    createRow(position: number, row: Uint8Array): void {
+        var rowCount = 0;
+        for (var i = 0; i < row.length; i++) {
+            if (row[i] === 1) {
+                rowCount++;
+                this.sprites.push(this.layer.create(this.x + i * this.objectSize, position, this.obstacleImage));
+            }
+        }
+    }
+
+    destroy(): void {
+        _.forEach(this.sprites, sprite => sprite.destroy());
     }
 }

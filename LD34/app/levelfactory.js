@@ -4,7 +4,7 @@ var LevelFactory = (function () {
     LevelFactory.createLevel = function (playArea, game, level) {
         switch (level) {
             case 1:
-                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
+                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 60, 14, 0.05, 0.05, 0.25, 1);
             default:
                 return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
         }
@@ -15,7 +15,7 @@ var LevelFactory = (function () {
         lv.speed = speed;
         lv.data = [];
         lv.lineWidth = lineWidth;
-        var blankLines = lineWidth * 2;
+        var blankLines = Math.ceil(playArea.height * (lineWidth / playArea.width));
         for (var i = 0; i < blankLines; i++) {
             lv.data.push(this.createEmptyLine(lineWidth));
         }
@@ -24,14 +24,19 @@ var LevelFactory = (function () {
         var obstacles = 0;
         for (var j = 0; j < lines; j++) {
             var line = this.createEmptyLine(lineWidth);
-            var emptySquares = lineWidth - 2;
             var goodDropsInRow = this.howManyInThisRow(j, goodDropRate, goodDrops, 1);
             var badDropsInRow = this.howManyInThisRow(j, badDropRate, badDrops, 1);
             var obstaclesInRow = this.howManyInThisRow(j, obstacleRate, obstacles, maxObstaclesPerLine);
             this.fillLine(line, 2, goodDropsInRow);
             this.fillLine(line, 3, badDropsInRow);
             this.fillLine(line, 1, obstaclesInRow);
+            goodDrops += goodDropsInRow;
+            badDrops += badDropsInRow;
+            obstacles += obstaclesInRow;
             lv.data.push(line);
+        }
+        for (var i = 0; i < blankLines; i++) {
+            lv.data.push(this.createEmptyLine(lineWidth));
         }
         return lv;
     };
@@ -46,7 +51,8 @@ var LevelFactory = (function () {
             do {
                 x = Math.floor(Math.random() * (line.length + 1));
             } while (line[x] !== 0);
-            line[x] = 2;
+            line[x] = fillValue;
+            valuesToFill--;
         }
     };
     LevelFactory.createEmptyLine = function (width) {
@@ -66,7 +72,7 @@ var LevelFactory = (function () {
             returnCounter++;
             probability -= 0.25;
         }
-        return 0;
+        return returnCounter;
     };
     return LevelFactory;
 })();

@@ -4,7 +4,7 @@ class Player implements IGameObject {
     private startX: number;
     private startY: number;
 
-    private speed: number = 800;
+    private speed: number = 400;
 
     private size: number = 8; // size
     private frameSize: number; // size this frame (used for pulsing)
@@ -14,7 +14,7 @@ class Player implements IGameObject {
     private sprite: Phaser.Sprite;
     private body: Phaser.Physics.Arcade.Body;
 
-    constructor(private playArea: PlayArea, private game: Phaser.Game) {
+    constructor(private playArea: PlayArea, private game: Phaser.Game, private layer: Phaser.Group) {
         this.startX = playArea.x + (playArea.width / 2);
         this.startY = playArea.height - 74;;
     }
@@ -25,8 +25,9 @@ class Player implements IGameObject {
 
     create(): void {
         this.image = PlayerImage.create(this.game, 64, 64, this.size);
-        this.sprite = new Phaser.Sprite(this.game, this.startX, this.startY, this.image.data);
-        this.game.add.existing(this.sprite);
+        this.sprite = this.layer.create(this.startX, this.startY, this.image.data);
+        //this.sprite = new Phaser.Sprite(this.game, this.startX, this.startY, this.image.data);
+        //this.game.add.existing(this.sprite);
         this.game.physics.arcade.enable(this.sprite);
         this.body = this.sprite.body;
         this.sprite.anchor.x = 0.5;
