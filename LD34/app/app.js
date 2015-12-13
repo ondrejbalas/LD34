@@ -7,9 +7,8 @@ var App = (function () {
         _.each(App.objects, function (o) { return o.preload(); });
     };
     App.prototype.create = function () {
-        App.ranCreate = true;
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
-        var spacerSize = 280;
+        var spacerSize = 160;
         var playAreaWidth = (this.game.width - spacerSize) / 2;
         var kb = this.game.input.keyboard;
         var leftKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.A), kb.addKey(Phaser.Keyboard.D));
@@ -24,6 +23,7 @@ var App = (function () {
         rightKeys.otherInput = leftKeys;
         var scoreArea = new ScoreArea(this.game, playAreaWidth, 0, spacerSize, this.game.height);
         App.register(scoreArea);
+        App.ranCreate = true;
         _.each(App.objects, function (o) { return o.create(); });
     };
     App.prototype.update = function () {
@@ -45,5 +45,5 @@ var App = (function () {
     return App;
 })();
 window.onload = function () {
-    var app = new App(1600, 800);
+    var app = new App(1000, 600);
 };

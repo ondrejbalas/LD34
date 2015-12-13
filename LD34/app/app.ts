@@ -19,11 +19,10 @@ class App {
     }
 
     create() {
-        App.ranCreate = true;
 
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
-        var spacerSize = 280;
+        var spacerSize = 160;
         var playAreaWidth = (this.game.width - spacerSize) / 2;
 
         var kb = this.game.input.keyboard;
@@ -44,6 +43,7 @@ class App {
         var scoreArea = new ScoreArea(this.game, playAreaWidth, 0, spacerSize, this.game.height);
         App.register(scoreArea);
 
+        App.ranCreate = true;
         _.each(App.objects, o => o.create());
 
 
@@ -67,5 +67,5 @@ class App {
 }
 
 window.onload = () => {
-    var app = new App(1600, 800);
+    var app = new App(1000, 600);
 };

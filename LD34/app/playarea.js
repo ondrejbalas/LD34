@@ -24,12 +24,6 @@ var PlayArea = (function () {
         this.bgSprite2 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[1]);
         this.bgSprite2.tileScale.x = 4;
         this.bgSprite2.tileScale.y = 4;
-        this.bgSprite3 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[2]);
-        this.bgSprite3.tileScale.x = 4;
-        this.bgSprite3.tileScale.y = 4;
-        this.bgSprite4 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[3]);
-        this.bgSprite4.tileScale.x = 4;
-        this.bgSprite4.tileScale.y = 4;
         this.player = new Player(this, this.game);
         App.register(this.player);
     };
@@ -37,9 +31,7 @@ var PlayArea = (function () {
         var delta = (this.game.time.elapsedMS / 1000);
         var speed = 16;
         this.bgSprite1.tilePosition.y += delta * (speed / 2);
-        this.bgSprite2.tilePosition.y += delta * (speed * 1.5);
-        this.bgSprite3.tilePosition.y += delta * (speed * 3);
-        this.bgSprite4.tilePosition.y += delta * (speed * 9);
+        this.bgSprite2.tilePosition.y += delta * (speed * 2);
     };
     return PlayArea;
 })();
