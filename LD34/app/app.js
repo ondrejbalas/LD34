@@ -41,7 +41,7 @@ var App = (function () {
     App.objects = [];
     App.ranPreload = false;
     App.ranCreate = false;
-    App.requireTwoInputs = false;
+    App.requireTwoInputs = true;
     return App;
 })();
 window.onload = function () {

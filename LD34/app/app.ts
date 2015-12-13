@@ -6,11 +6,10 @@ class App {
     private static objects: Array<IGameObject> = [];
     private static ranPreload: boolean = false;
     private static ranCreate: boolean = false;
-    public static requireTwoInputs: boolean = false;
+    public static requireTwoInputs: boolean = true;
 
     constructor(width: number, height: number) {
         this.game = new Phaser.Game(width, height, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
-        //this.game.time.desiredFps = 60;
     }
 
     preload() {

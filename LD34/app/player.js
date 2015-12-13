@@ -11,7 +11,6 @@ var Player = (function () {
     Player.prototype.preload = function () {
     };
     Player.prototype.create = function () {
-        console.log("creating player at " + this.startX + ", " + this.startY);
         this.image = PlayerImage.create(this.game, 64, 64, this.size);
         this.sprite = new Phaser.Sprite(this.game, this.startX, this.startY, this.image.data);
         this.game.add.existing(this.sprite);
