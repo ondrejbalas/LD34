@@ -7,8 +7,8 @@ var Level = (function () {
         this.y = playArea.y;
     }
     Level.prototype.preload = function () { };
-    Level.prototype.create = function (layer) {
-        console.debug("creating level");
+    Level.prototype.create = function (layer, levelEnded) {
+        this.levelEnded = levelEnded;
         this.layer = layer;
         this.position = -1;
         this.lastSpawnedRow = -1;
@@ -24,8 +24,13 @@ var Level = (function () {
         var y = Math.ceil(this.position);
         if (y > this.lastSpawnedRow) {
             this.lastSpawnedRow++;
-            var row = this.data[this.lastSpawnedRow];
-            this.createRow(-this.objectSize, row);
+            if (this.lastSpawnedRow < this.data.length) {
+                var row = this.data[this.lastSpawnedRow];
+                this.createRow(-this.objectSize, row);
+            }
+            else {
+                this.levelEnded();
+            }
         }
     };
     Level.prototype.createInitialRows = function () {

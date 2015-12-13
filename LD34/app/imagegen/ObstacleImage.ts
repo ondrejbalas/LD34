@@ -2,7 +2,6 @@
     public static create(game: Phaser.Game, size: number): Phaser.BitmapData {
         var key = 'obstacle.' + size;
         var factory = () => {
-            console.log("creating new obstacle with key '" + key + "'");
             var data = game.add.bitmapData(size, size, key, true);
             var p1 = size * 5 / 8;
             var r1 = 0;

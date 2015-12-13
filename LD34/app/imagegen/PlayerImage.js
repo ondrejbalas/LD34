@@ -4,8 +4,6 @@ var PlayerImage = (function () {
         this.height = height;
     }
     PlayerImage.create = function (game, width, height, size) {
-        var scaledWidth = width;
-        var scaledHeight = height;
         var img = new PlayerImage(width, height);
         img.data = game.add.bitmapData(width, height);
         img.fill(size);

@@ -13,6 +13,7 @@ class Level {
     private layer: Phaser.Group;
     private objectSize: number;
     private obstacleImage: Phaser.BitmapData;
+    private levelEnded: () => void;
 
     constructor(private playArea: PlayArea, private game: Phaser.Game) {
         this.x = playArea.x;
@@ -21,8 +22,8 @@ class Level {
 
     preload(): void {}
 
-    create(layer: Phaser.Group): void {
-        console.debug("creating level");
+    create(layer: Phaser.Group, levelEnded: () => void): void {
+        this.levelEnded = levelEnded;
         this.layer = layer;
         this.position = -1;
         this.lastSpawnedRow = -1;
@@ -40,8 +41,12 @@ class Level {
         if (y > this.lastSpawnedRow) {
             this.lastSpawnedRow++;
 
-            var row = this.data[this.lastSpawnedRow];
-            this.createRow(-this.objectSize, row);
+            if (this.lastSpawnedRow < this.data.length) {
+                var row = this.data[this.lastSpawnedRow];
+                this.createRow(-this.objectSize, row);
+            } else {
+                this.levelEnded();
+            }
         }
     }
 

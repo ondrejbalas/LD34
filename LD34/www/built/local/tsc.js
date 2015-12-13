@@ -8,16 +8,14 @@ var App = (function () {
     };
     App.prototype.create = function () {
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
-        var spacerSize = 160;
+        var spacerSize = 40;
         var playAreaWidth = (this.game.width - spacerSize) / 2;
         var kb = this.game.input.keyboard;
         var leftKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.A), kb.addKey(Phaser.Keyboard.D));
         var leftArea = new PlayArea(0, this.game, 0, 0, playAreaWidth, this.game.height, leftKeys);
-        leftArea.setLevel(LevelFactory.createLevel(leftArea, this.game, 1));
         App.register(leftArea);
         var rightKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.LEFT), kb.addKey(Phaser.Keyboard.RIGHT));
         var rightArea = new PlayArea(1, this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys);
-        rightArea.setLevel(LevelFactory.createLevel(rightArea, this.game, 1));
         App.register(rightArea);
         leftKeys.otherInput = rightKeys;
         rightKeys.otherInput = leftKeys;
@@ -182,8 +180,8 @@ var Level = (function () {
         this.y = playArea.y;
     }
     Level.prototype.preload = function () { };
-    Level.prototype.create = function (layer) {
-        console.debug("creating level");
+    Level.prototype.create = function (layer, levelEnded) {
+        this.levelEnded = levelEnded;
         this.layer = layer;
         this.position = -1;
         this.lastSpawnedRow = -1;
@@ -199,8 +197,13 @@ var Level = (function () {
         var y = Math.ceil(this.position);
         if (y > this.lastSpawnedRow) {
             this.lastSpawnedRow++;
-            var row = this.data[this.lastSpawnedRow];
-            this.createRow(-this.objectSize, row);
+            if (this.lastSpawnedRow < this.data.length) {
+                var row = this.data[this.lastSpawnedRow];
+                this.createRow(-this.objectSize, row);
+            }
+            else {
+                this.levelEnded();
+            }
         }
     };
     Level.prototype.createInitialRows = function () {
@@ -230,11 +233,12 @@ var LevelFactory = (function () {
     function LevelFactory() {
     }
     LevelFactory.createLevel = function (playArea, game, level) {
+        console.debug("making a level " + level);
         switch (level) {
             case 1:
-                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 60, 14, 0.05, 0.05, 0.25, 1);
+                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 50, 14, 0.05, 0.05, 0.25, 1);
             default:
-                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
+                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 60 + (level * 10), 14, 0.05, 0.05, 0.25 + (level * 0.05), 2);
         }
     };
     LevelFactory.create = function (playArea, game, background, speed, lines, lineWidth, goodDropRate, badDropRate, obstacleRate, maxObstaclesPerLine) {
@@ -251,7 +255,7 @@ var LevelFactory = (function () {
         var badDrops = 0;
         var obstacles = 0;
         for (var j = 0; j < lines; j++) {
-            var line = this.createEmptyLine(lineWidth);
+            var line = this.createEmptyLine(lineWidth, true);
             var goodDropsInRow = this.howManyInThisRow(j, goodDropRate, goodDrops, 1);
             var badDropsInRow = this.howManyInThisRow(j, badDropRate, badDrops, 1);
             var obstaclesInRow = this.howManyInThisRow(j, obstacleRate, obstacles, maxObstaclesPerLine);
@@ -283,10 +287,13 @@ var LevelFactory = (function () {
             valuesToFill--;
         }
     };
-    LevelFactory.createEmptyLine = function (width) {
+    LevelFactory.createEmptyLine = function (width, ballsOnEnds) {
+        if (ballsOnEnds === void 0) { ballsOnEnds = false; }
         var newArray = new Uint8Array(width);
-        newArray[0] = 1;
-        newArray[width - 1] = 1;
+        if (ballsOnEnds) {
+            newArray[0] = 1;
+            newArray[width - 1] = 1;
+        }
         return newArray;
     };
     LevelFactory.howManyInThisRow = function (lineNumber, rate, totalSoFar, maxPerLine) {
@@ -315,39 +322,55 @@ var PlayArea = (function () {
         this.input = input;
         this.counter = 0;
         this.bgLayer = this.game.add.group();
-        this.frontLayer = this.game.add.group();
+        this.obstacleLayer = this.game.add.group();
+        this.playerLayer = this.game.add.group();
     }
-    PlayArea.prototype.setLevel = function (level) {
+    PlayArea.prototype.setLevel = function (levelNumber) {
+        var _this = this;
+        console.log("setLevel: " + levelNumber);
         if (this.currentLevel) {
             this.currentLevel.destroy();
         }
+        var level = LevelFactory.createLevel(this, this.game, levelNumber);
         level.preload();
-        level.create(this.frontLayer);
+        level.create(this.obstacleLayer, function () {
+            level.destroy();
+            _this.setLevel(levelNumber + 1);
+        });
         this.currentLevel = level;
         this.playerY = 0;
         this.bg = level.background;
+        var bgImages = this.bg.makeImages(this.game, this.width / 4, this.height / 4);
+        if (!this.bgSprite1) {
+            this.bgSprite1 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[0]);
+            this.bgSprite2 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[1]);
+            this.bgLayer.add(this.bgSprite1);
+            this.bgLayer.add(this.bgSprite2);
+        }
+        else {
+            this.bgSprite1.destroy();
+            this.bgSprite2.destroy();
+            this.bgSprite1 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[0]);
+            this.bgSprite2 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[1]);
+            this.bgLayer.add(this.bgSprite1);
+            this.bgLayer.add(this.bgSprite2);
+        }
+        this.bgSprite1.autoScroll(0, 16);
+        this.bgSprite2.autoScroll(0, 32 * 1.4);
+        this.bgSprite1.tileScale.x = 4;
+        this.bgSprite1.tileScale.y = 4;
+        this.bgSprite2.tileScale.x = 4;
+        this.bgSprite2.tileScale.y = 4;
     };
     PlayArea.prototype.preload = function () {
     };
     PlayArea.prototype.create = function () {
-        var bgImages = this.bg.makeImages(this.game, this.width / 4, this.height / 4);
-        this.bgSprite1 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[0]);
-        this.bgSprite1.tileScale.x = 4;
-        this.bgSprite1.tileScale.y = 4;
-        this.bgSprite2 = this.game.add.tileSprite(this.x, 0, this.width, this.height, bgImages[1]);
-        this.bgSprite2.tileScale.x = 4;
-        this.bgSprite2.tileScale.y = 4;
-        this.bgLayer.add(this.bgSprite1);
-        this.bgLayer.add(this.bgSprite2);
-        this.player = new Player(this, this.game, this.frontLayer);
+        this.setLevel(1);
+        this.player = new Player(this, this.game, this.playerLayer);
         App.register(this.player);
     };
     PlayArea.prototype.update = function () {
         this.currentLevel.update();
-        var delta = (this.game.time.elapsedMS / 1000);
-        var speed = 32;
-        this.bgSprite1.tilePosition.y += delta * (speed / 2);
-        this.bgSprite2.tilePosition.y += delta * (speed * 1.4);
     };
     return PlayArea;
 })();
@@ -365,20 +388,24 @@ var Player = (function () {
     Player.prototype.preload = function () {
     };
     Player.prototype.create = function () {
-        this.image = PlayerImage.create(this.game, 64, 64, this.size);
+        this.image = PlayerImage.create(this.game, 64, 64, 32);
         this.sprite = this.layer.create(this.startX, this.startY, this.image.data);
         this.game.physics.arcade.enable(this.sprite);
         this.body = this.sprite.body;
         this.sprite.anchor.x = 0.5;
         this.sprite.anchor.y = 0.5;
-        this.sprite.scale.x = 2;
-        this.sprite.scale.y = 2;
+        this.sprite.scale.x = .5;
+        this.sprite.scale.y = .5;
         this.body.offset.x = 64;
         this.body.offset.y = 64;
         this.input = this.playArea.input;
     };
     Player.prototype.update = function () {
         this.body.velocity.x = 0;
+        var delta = (this.game.time.elapsedMS / 1000);
+        this.size = Math.min(32, this.size + (delta / 2));
+        this.sprite.scale.x = this.size / 16;
+        this.sprite.scale.y = this.size / 16;
         this.frameSize = this.size;
         this.body.x = Math.min(Math.max(this.body.x, this.playArea.x + (this.frameSize + 40)), this.playArea.x + this.playArea.width - (this.frameSize + 40));
         if (this.input.isLeft()) {
@@ -455,7 +482,6 @@ var ObstacleImage = (function () {
     ObstacleImage.create = function (game, size) {
         var key = 'obstacle.' + size;
         var factory = function () {
-            console.log("creating new obstacle with key '" + key + "'");
             var data = game.add.bitmapData(size, size, key, true);
             var p1 = size * 5 / 8;
             var r1 = 0;
@@ -489,8 +515,6 @@ var PlayerImage = (function () {
         this.height = height;
     }
     PlayerImage.create = function (game, width, height, size) {
-        var scaledWidth = width;
-        var scaledHeight = height;
         var img = new PlayerImage(width, height);
         img.data = game.add.bitmapData(width, height);
         img.fill(size);

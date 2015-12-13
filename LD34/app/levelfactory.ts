@@ -1,10 +1,11 @@
 ﻿class LevelFactory {
     public static createLevel(playArea: PlayArea, game: Phaser.Game, level: number): Level {
+        console.debug("making a level " + level);
         switch (level) {
         case 1:
-            return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 60, 14, 0.05, 0.05, 0.25, 1);
+            return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 50, 14, 0.05, 0.05, 0.25, 1);
         default:
-            return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
+            return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 60 + (level * 10), 14, 0.05, 0.05, 0.25 + (level * 0.05), 2);
         }
     }
 
@@ -34,7 +35,7 @@
             // Figure out how many obstacles we'll have
 
             // Get a new empty row
-            var line = this.createEmptyLine(lineWidth);
+            var line = this.createEmptyLine(lineWidth, true);
 
             var goodDropsInRow = this.howManyInThisRow(j, goodDropRate, goodDrops, 1);
             var badDropsInRow = this.howManyInThisRow(j, badDropRate, badDrops, 1);
@@ -72,10 +73,12 @@
         }
     }
 
-    private static createEmptyLine(width: number): Uint8Array {
+    private static createEmptyLine(width: number, ballsOnEnds = false): Uint8Array {
         var newArray = new Uint8Array(width);
-        newArray[0] = 1;
-        newArray[width - 1] = 1;
+        if(ballsOnEnds) {
+            newArray[0] = 1;
+            newArray[width - 1] = 1;
+        }
         return newArray;
     }
 

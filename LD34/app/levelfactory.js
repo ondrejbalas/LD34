@@ -2,11 +2,12 @@ var LevelFactory = (function () {
     function LevelFactory() {
     }
     LevelFactory.createLevel = function (playArea, game, level) {
+        console.debug("making a level " + level);
         switch (level) {
             case 1:
-                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 60, 14, 0.05, 0.05, 0.25, 1);
+                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 50, 14, 0.05, 0.05, 0.25, 1);
             default:
-                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
+                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 60 + (level * 10), 14, 0.05, 0.05, 0.25 + (level * 0.05), 2);
         }
     };
     LevelFactory.create = function (playArea, game, background, speed, lines, lineWidth, goodDropRate, badDropRate, obstacleRate, maxObstaclesPerLine) {
@@ -23,7 +24,7 @@ var LevelFactory = (function () {
         var badDrops = 0;
         var obstacles = 0;
         for (var j = 0; j < lines; j++) {
-            var line = this.createEmptyLine(lineWidth);
+            var line = this.createEmptyLine(lineWidth, true);
             var goodDropsInRow = this.howManyInThisRow(j, goodDropRate, goodDrops, 1);
             var badDropsInRow = this.howManyInThisRow(j, badDropRate, badDrops, 1);
             var obstaclesInRow = this.howManyInThisRow(j, obstacleRate, obstacles, maxObstaclesPerLine);
@@ -55,10 +56,13 @@ var LevelFactory = (function () {
             valuesToFill--;
         }
     };
-    LevelFactory.createEmptyLine = function (width) {
+    LevelFactory.createEmptyLine = function (width, ballsOnEnds) {
+        if (ballsOnEnds === void 0) { ballsOnEnds = false; }
         var newArray = new Uint8Array(width);
-        newArray[0] = 1;
-        newArray[width - 1] = 1;
+        if (ballsOnEnds) {
+            newArray[0] = 1;
+            newArray[width - 1] = 1;
+        }
         return newArray;
     };
     LevelFactory.howManyInThisRow = function (lineNumber, rate, totalSoFar, maxPerLine) {

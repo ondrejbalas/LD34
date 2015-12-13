@@ -9,8 +9,6 @@
     }
 
     public static create(game: Phaser.Game, width: number, height: number, size: number): PlayerImage {
-        var scaledWidth = width;
-        var scaledHeight = height;
         var img = new PlayerImage(width, height);
         img.data = game.add.bitmapData(width, height);
         img.fill(size);

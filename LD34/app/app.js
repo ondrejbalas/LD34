@@ -8,16 +8,14 @@ var App = (function () {
     };
     App.prototype.create = function () {
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
-        var spacerSize = 160;
+        var spacerSize = 40;
         var playAreaWidth = (this.game.width - spacerSize) / 2;
         var kb = this.game.input.keyboard;
         var leftKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.A), kb.addKey(Phaser.Keyboard.D));
         var leftArea = new PlayArea(0, this.game, 0, 0, playAreaWidth, this.game.height, leftKeys);
-        leftArea.setLevel(LevelFactory.createLevel(leftArea, this.game, 1));
         App.register(leftArea);
         var rightKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.LEFT), kb.addKey(Phaser.Keyboard.RIGHT));
         var rightArea = new PlayArea(1, this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys);
-        rightArea.setLevel(LevelFactory.createLevel(rightArea, this.game, 1));
         App.register(rightArea);
         leftKeys.otherInput = rightKeys;
         rightKeys.otherInput = leftKeys;

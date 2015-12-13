@@ -24,7 +24,7 @@ class Player implements IGameObject {
     }
 
     create(): void {
-        this.image = PlayerImage.create(this.game, 64, 64, this.size);
+        this.image = PlayerImage.create(this.game, 64, 64, 32);
         this.sprite = this.layer.create(this.startX, this.startY, this.image.data);
         //this.sprite = new Phaser.Sprite(this.game, this.startX, this.startY, this.image.data);
         //this.game.add.existing(this.sprite);
@@ -33,8 +33,8 @@ class Player implements IGameObject {
         this.sprite.anchor.x = 0.5;
         this.sprite.anchor.y = 0.5;
 
-        this.sprite.scale.x = 2;
-        this.sprite.scale.y = 2;
+        this.sprite.scale.x = .5;
+        this.sprite.scale.y = .5;
 
         this.body.offset.x = 64;
         this.body.offset.y = 64;
@@ -47,7 +47,12 @@ class Player implements IGameObject {
         //this.body.y = 250;
         //if (this.body.x < 40) this.body.x = 40;
         //if (this.body.x )
-        
+
+        var delta = (this.game.time.elapsedMS / 1000);
+        this.size = Math.min(32, this.size + (delta / 2));
+
+        this.sprite.scale.x = this.size / 16;
+        this.sprite.scale.y = this.size / 16;
         this.frameSize = this.size;
 
         // contain to the play area
