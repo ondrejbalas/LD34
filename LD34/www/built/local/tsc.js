@@ -13,11 +13,11 @@ var App = (function () {
         var kb = this.game.input.keyboard;
         var leftKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.A), kb.addKey(Phaser.Keyboard.D));
         var leftArea = new PlayArea(this.game, 0, 0, playAreaWidth, this.game.height, leftKeys);
-        leftArea.setLevel(LevelFactory.createLevel(1));
+        leftArea.setLevel(LevelFactory.createLevel(leftArea, this.game, 1));
         App.register(leftArea);
         var rightKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.LEFT), kb.addKey(Phaser.Keyboard.RIGHT));
         var rightArea = new PlayArea(this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys);
-        rightArea.setLevel(LevelFactory.createLevel(1));
+        rightArea.setLevel(LevelFactory.createLevel(leftArea, this.game, 1));
         App.register(rightArea);
         leftKeys.otherInput = rightKeys;
         rightKeys.otherInput = leftKeys;
@@ -174,13 +174,40 @@ var Background = (function () {
     return Background;
 })();
 var Level = (function () {
-    function Level() {
+    function Level(playArea, game) {
+        this.playArea = playArea;
+        this.game = game;
+        this.sprites = [];
+        this.x = playArea.x;
+        this.y = playArea.y;
     }
-    Level.create = function (background, speed, lines, lineWidth, goodDropRate, badDropRate, obstacleRate, maxObstaclesPerLine) {
-        var lv = new Level();
+    Level.prototype.preload = function () { };
+    Level.prototype.create = function () {
+        var image = ObstacleImage.create(this.game, this.playArea.width / this.lineWidth);
+        var newSprite = this.game.add.sprite(this.x + 100, this.y + 100, image);
+        newSprite.z = 100000;
+    };
+    Level.prototype.update = function () {
+    };
+    return Level;
+})();
+var LevelFactory = (function () {
+    function LevelFactory() {
+    }
+    LevelFactory.createLevel = function (playArea, game, level) {
+        switch (level) {
+            case 1:
+                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
+            default:
+                return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
+        }
+    };
+    LevelFactory.create = function (playArea, game, background, speed, lines, lineWidth, goodDropRate, badDropRate, obstacleRate, maxObstaclesPerLine) {
+        var lv = new Level(playArea, game);
         lv.background = background;
         lv.speed = speed;
         lv.data = [];
+        lv.lineWidth = lineWidth;
         var blankLines = lineWidth * 2;
         for (var i = 0; i < blankLines; i++) {
             lv.data.push(this.createEmptyLine(lineWidth));
@@ -201,7 +228,7 @@ var Level = (function () {
         }
         return lv;
     };
-    Level.fillLine = function (line, fillValue, valuesToFill) {
+    LevelFactory.fillLine = function (line, fillValue, valuesToFill) {
         var emptySquares = 0;
         for (var i = 0; i < line.length; i++) {
             if (line[i] === 0)
@@ -215,13 +242,13 @@ var Level = (function () {
             line[x] = 2;
         }
     };
-    Level.createEmptyLine = function (width) {
+    LevelFactory.createEmptyLine = function (width) {
         var newArray = new Uint8Array(width);
         newArray[0] = 1;
         newArray[width - 1] = 1;
         return newArray;
     };
-    Level.howManyInThisRow = function (lineNumber, rate, totalSoFar, maxPerLine) {
+    LevelFactory.howManyInThisRow = function (lineNumber, rate, totalSoFar, maxPerLine) {
         var expectedRate = rate * lineNumber;
         var shortBy = expectedRate - totalSoFar;
         if (shortBy < 0)
@@ -233,18 +260,6 @@ var Level = (function () {
             probability -= 0.25;
         }
         return 0;
-    };
-    return Level;
-})();
-var LevelFactory = (function () {
-    function LevelFactory() {
-    }
-    LevelFactory.createLevel = function (level) {
-        switch (level) {
-            case 1:
-                return Level.create(Background.fromTheme(Theme.Random), 20, 60, 14, 0.05, 0.05, 1.2, 2);
-            default:
-        }
     };
     return LevelFactory;
 })();
@@ -259,6 +274,8 @@ var PlayArea = (function () {
         this.counter = 0;
     }
     PlayArea.prototype.setLevel = function (level) {
+        level.preload();
+        level.create();
         this.currentLevel = level;
         this.playerY = 0;
         this.bg = level.background;
@@ -277,6 +294,7 @@ var PlayArea = (function () {
         App.register(this.player);
     };
     PlayArea.prototype.update = function () {
+        this.currentLevel.update();
         var delta = (this.game.time.elapsedMS / 1000);
         var speed = 32;
         this.bgSprite1.tilePosition.y += delta * (speed / 2);
@@ -289,7 +307,7 @@ var Player = (function () {
         this.playArea = playArea;
         this.game = game;
         this.speed = 800;
-        this.size = 32;
+        this.size = 8;
         this.startX = playArea.x + (playArea.width / 2);
         this.startY = playArea.height - 74;
         ;
@@ -382,6 +400,36 @@ var Theme;
     Theme[Theme["Random"] = 4] = "Random";
 })(Theme || (Theme = {}));
 ;
+var ObstacleImage = (function () {
+    function ObstacleImage() {
+    }
+    ObstacleImage.create = function (game, size) {
+        var key = 'obstacle.' + size;
+        var factory = function () {
+            console.log("creating new obstacle with key '" + key + "'");
+            var data = game.add.bitmapData(size, size, key, true);
+            var grd = data.context.createRadialGradient(size * 3 / 4, size * 3 / 4, 0, size * 3 / 4, size * 3 / 4, size / 3);
+            grd.addColorStop(0, "#F4FEFD");
+            grd.addColorStop(0.1, "#D5F6FD");
+            grd.addColorStop(0.3, "#2DCAFF");
+            grd.addColorStop(0.5, "#1369C0");
+            grd.addColorStop(1.0, "#05235F");
+            data.circle(size / 2, size / 2, size / 2, grd);
+            ;
+            return data;
+        };
+        return this.getOrAdd(game, key, factory);
+    };
+    ObstacleImage.getOrAdd = function (game, key, factory) {
+        if (game.cache.checkBitmapDataKey(key)) {
+            return game.cache.getBitmapData(key);
+        }
+        else {
+            return factory();
+        }
+    };
+    return ObstacleImage;
+})();
 var PlayerImage = (function () {
     function PlayerImage(width, height) {
         this.width = width;

@@ -1,87 +1,28 @@
 ﻿/// <reference path="../typings/underscore/underscore.d.ts" />
 
-class Level {
+class Level implements IGameObject {
     public speed: number;
     public data: Uint8Array[]; // 0 = empty, 1 = obstacle, 2 = good drop, 3 = bad drop
     public background: Background;
+    public lineWidth: number;
+    private sprites: Phaser.Sprite[] = [];
+    private x: number;
+    private y: number;
 
-    public static create(background: Background, speed: number, lines: number, lineWidth: number, goodDropRate: number, badDropRate: number, obstacleRate: number, maxObstaclesPerLine: number): Level {
-        var lv = new Level();
-        lv.background = background;
-        lv.speed = speed;
-        lv.data = [];
-
-        // A certain number of lines is left blank so the player can 'get started' before things start spawning
-        var blankLines = lineWidth * 2;
-
-        // push the blank lines onto the array
-        for (var i = 0; i < blankLines; i++) {
-            lv.data.push(this.createEmptyLine(lineWidth));
-        }
-
-        // Now for each real line..
-        // Keep track of the total number of good / bad drops and obstacles
-        var goodDrops = 0;
-        var badDrops = 0;
-        var obstacles = 0;
-
-        for (var j = 0; j < lines; j++) {
-            // And for each row,
-            // Figure out how many obstacles we'll have
-
-            // Get a new empty row
-            var line = this.createEmptyLine(lineWidth);
-            var emptySquares = lineWidth - 2;
-            
-            var goodDropsInRow = this.howManyInThisRow(j, goodDropRate, goodDrops, 1);
-            var badDropsInRow = this.howManyInThisRow(j, badDropRate, badDrops, 1);
-            var obstaclesInRow = this.howManyInThisRow(j, obstacleRate, obstacles, maxObstaclesPerLine);
-
-            this.fillLine(line, 2, goodDropsInRow);
-            this.fillLine(line, 3, badDropsInRow);
-            this.fillLine(line, 1, obstaclesInRow);
-
-            lv.data.push(line);
-        }
-        return lv;
+    constructor(private playArea: PlayArea, private game: Phaser.Game) {
+        this.x = playArea.x;
+        this.y = playArea.y;
     }
 
-    private static fillLine(line: Uint8Array, fillValue: number, valuesToFill: number) {
-        var emptySquares = 0;
-        for (var i = 0; i < line.length; i++) {
-            if (line[i] === 0) emptySquares++;
-        }
+    preload(): void {}
 
-        while (valuesToFill > 0 && emptySquares >> 0) {
-            var x = 0;
-            do {
-                x = Math.floor(Math.random() * (line.length + 1));
-            } while (line[x] !== 0)
-            line[x] = 2;
-        }
+    create(): void {
+        var image = ObstacleImage.create(this.game, this.playArea.width / this.lineWidth);
+        var newSprite = this.game.add.sprite(this.x + 100, this.y + 100, image);
+        newSprite.z = 100000;
     }
 
-    private static createEmptyLine(width: number): Uint8Array {
-        var newArray = new Uint8Array(width);
-        newArray[0] = 1;
-        newArray[width - 1] = 1;
-        return newArray;
-    }
-
-    private static howManyInThisRow(lineNumber: number, rate: number, totalSoFar: number, maxPerLine : number): number {
-        var expectedRate = rate * lineNumber;
-
-        var shortBy = expectedRate - totalSoFar;
-
-        if (shortBy < 0)
-            return 0;
-
-        var probability = shortBy / 10;
-        var returnCounter = 0;
-        while (returnCounter < maxPerLine && probability > Math.random()) {
-            returnCounter++;
-            probability -= 0.25;
-        }
-        return 0;
+    update(): void {
+        
     }
 }

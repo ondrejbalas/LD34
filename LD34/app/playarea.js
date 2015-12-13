@@ -9,6 +9,8 @@ var PlayArea = (function () {
         this.counter = 0;
     }
     PlayArea.prototype.setLevel = function (level) {
+        level.preload();
+        level.create();
         this.currentLevel = level;
         this.playerY = 0;
         this.bg = level.background;
@@ -27,6 +29,7 @@ var PlayArea = (function () {
         App.register(this.player);
     };
     PlayArea.prototype.update = function () {
+        this.currentLevel.update();
         var delta = (this.game.time.elapsedMS / 1000);
         var speed = 32;
         this.bgSprite1.tilePosition.y += delta * (speed / 2);

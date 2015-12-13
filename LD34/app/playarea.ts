@@ -9,6 +9,8 @@ class PlayArea implements IGameObject {
 
     private currentLevel: Level;
     public setLevel(level: Level): void {
+        level.preload();
+        level.create();
         this.currentLevel = level;
         this.playerY = 0;
         this.bg = level.background;
@@ -39,6 +41,8 @@ class PlayArea implements IGameObject {
 
     private counter: number = 0;
     update(): void {
+        this.currentLevel.update();
+
         var delta = (this.game.time.elapsedMS / 1000);
         var speed = 32;
 

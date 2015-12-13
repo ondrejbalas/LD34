@@ -38,7 +38,6 @@
     <TypeScriptCompile Include="app\app.ts" />
     <TypeScriptCompile Include="app\background.ts" />
     <TypeScriptCompile Include="app\enum\theme.ts" />
-    <TypeScriptCompile Include="app\imagegen\Obstacle.ts" />
     <TypeScriptCompile Include="app\imagegen\PlayerImage.ts" />
     <TypeScriptCompile Include="app\level.ts" />
     <TypeScriptCompile Include="app\levelfactory.ts" />

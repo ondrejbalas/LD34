@@ -3,7 +3,7 @@ var Player = (function () {
         this.playArea = playArea;
         this.game = game;
         this.speed = 800;
-        this.size = 32;
+        this.size = 8;
         this.startX = playArea.x + (playArea.width / 2);
         this.startY = playArea.height - 74;
         ;
