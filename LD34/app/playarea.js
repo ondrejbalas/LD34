@@ -30,7 +30,7 @@ var PlayArea = (function () {
         var delta = (this.game.time.elapsedMS / 1000);
         var speed = 32;
         this.bgSprite1.tilePosition.y += delta * (speed / 2);
-        this.bgSprite2.tilePosition.y += delta * (speed * 2);
+        this.bgSprite2.tilePosition.y += delta * (speed * 1.4);
     };
     return PlayArea;
 })();

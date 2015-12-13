@@ -124,6 +124,7 @@
         return datas;
     }
 
+    // These functions adapted from http://stackoverflow.com/a/13542669/625465
     shadeColor(color: number, percent: number): number[] {
         var f = color, t = percent < 0 ? 0 : 255, p = percent < 0 ? percent * -1 : percent, R = f >> 16, G = f >> 8 & 0x00FF, B = f & 0x0000FF;
         var val = [(Math.round((t - R) * p) + R), (Math.round((t - G) * p) + G), (Math.round((t - B) * p) + B)];

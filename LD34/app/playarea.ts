@@ -43,6 +43,6 @@ class PlayArea implements IGameObject {
         var speed = 32;
 
         this.bgSprite1.tilePosition.y += delta * (speed / 2);
-        this.bgSprite2.tilePosition.y += delta * (speed * 2);
+        this.bgSprite2.tilePosition.y += delta * (speed * 1.4);
     }
 }
