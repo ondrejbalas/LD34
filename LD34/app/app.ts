@@ -30,10 +30,12 @@ class App {
 
         var leftKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.A), kb.addKey(Phaser.Keyboard.D));
         var leftArea = new PlayArea(this.game, 0, 0, playAreaWidth, this.game.height, leftKeys);
+        leftArea.setLevel(LevelFactory.createLevel(1));
         App.register(leftArea);
 
         var rightKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.LEFT), kb.addKey(Phaser.Keyboard.RIGHT));
         var rightArea = new PlayArea(this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys);
+        rightArea.setLevel(LevelFactory.createLevel(1));
         App.register(rightArea);
 
         leftKeys.otherInput = rightKeys;
@@ -53,7 +55,7 @@ class App {
         _.each(App.objects, o => o.update());
     }
 
-    public static register(obj: IGameObject) {
+    public static register(obj: IGameObject) : void {
         this.objects.push(obj);
         if (App.ranPreload) {
             obj.preload();

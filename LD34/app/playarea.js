@@ -8,6 +8,10 @@ var PlayArea = (function () {
         this.input = input;
         this.playAreaColor = 0x000000;
     }
+    PlayArea.prototype.setLevel = function (level) {
+        this.currentLevel = level;
+        this.playerY = 0;
+    };
     PlayArea.prototype.preload = function () {
     };
     PlayArea.prototype.create = function () {

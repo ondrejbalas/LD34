@@ -47,6 +47,40 @@ var App = (function () {
 window.onload = function () {
     var app = new App(1600, 800);
 };
+var Level = (function () {
+    function Level() {
+    }
+    Level.create = function (speed, lines, lineWidth, goodDropRate, badDropRate, obstacleRate, maxObstaclesPerLine) {
+        var lv = new Level();
+        lv.data = [];
+        var blankLines = lineWidth * 2;
+        for (var i = 0; i < blankLines; i++) {
+            lv.data.push(this.createEmptyLine(lineWidth));
+        }
+        var goodDrops = 0;
+        var badDrops = 0;
+        var obstacles = 0;
+        for (var j = 0; j < lines; j++) {
+            var line = this.createEmptyLine(lineWidth);
+        }
+        return new Level();
+    };
+    Level.createEmptyLine = function (width) {
+        var newArray = new Uint8Array(width);
+        newArray[0] = 1;
+        newArray[width - 1] = 1;
+        return newArray;
+    };
+    Level.howManyInThisRow = function (lineNumber, rate, totalSoFar, maxPerLine) {
+        var expectedRate = rate * lineNumber;
+        var shortBy = expectedRate - totalSoFar;
+        if (shortBy < 0)
+            return 0;
+        if ()
+            ;
+    };
+    return Level;
+})();
 var PlayArea = (function () {
     function PlayArea(game, x, y, width, height, input) {
         this.game = game;

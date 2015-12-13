@@ -4,6 +4,13 @@ class PlayArea implements IGameObject {
     public player: Player;
     public g: Phaser.Graphics;
 
+    private currentLevel: Level;
+    public setLevel(level: Level): void {
+        this.currentLevel = level;
+        this.playerY = 0;
+    }
+    public playerY: number;
+
     private playAreaColor: number = 0x000000;
 
     constructor(private game: Phaser.Game, public x: number, public y: number, public width: number, public height: number, public input: PlayerInput) {
