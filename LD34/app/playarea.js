@@ -1,12 +1,15 @@
 var PlayArea = (function () {
-    function PlayArea(id, game, x, y, width, height, input) {
+    function PlayArea(id, game, scoreArea, x, y, width, height, input, flagGameOver) {
         this.id = id;
         this.game = game;
+        this.scoreArea = scoreArea;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.input = input;
+        this.flagGameOver = flagGameOver;
+        this.gameIsOver = false;
         this.counter = 0;
         this.bgLayer = this.game.add.group();
         this.obstacleLayer = this.game.add.group();
@@ -14,6 +17,7 @@ var PlayArea = (function () {
     }
     PlayArea.prototype.setLevel = function (levelNumber) {
         var _this = this;
+        this.scoreArea.setLevel(levelNumber);
         console.log("setLevel: " + levelNumber);
         if (this.currentLevel) {
             this.currentLevel.destroy();
@@ -58,6 +62,18 @@ var PlayArea = (function () {
     };
     PlayArea.prototype.update = function () {
         this.currentLevel.update();
+        var colliding = this.currentLevel.isPlayerColliding(this.player);
+        if (colliding && colliding.type === 1) {
+            console.log(this.flagGameOver);
+            this.flagGameOver();
+        }
+    };
+    PlayArea.prototype.gameOver = function () {
+        this.gameIsOver = true;
+        this.currentLevel.gameOver = true;
+        this.currentLevel.destroy();
+        this.scoreArea.showGameOver();
+        this.player.gameOver();
     };
     return PlayArea;
 })();

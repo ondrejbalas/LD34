@@ -5,6 +5,22 @@
     <meta charset="utf-8" />
     <title>Ludum Dare 34</title>
     <link rel="stylesheet" href="www/built/local/app.css" type="text/css" />
+
+    <script type="text/javascript">
+        WebFontConfig = {
+            google: { families: ['Revalia'] }
+        };
+        (function () {
+            var wf = document.createElement('script');
+            wf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
+                '://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+            wf.type = 'text/javascript';
+            wf.async = 'true';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(wf, s);
+        })();
+    </script>
+
     <script src="www/scripts/libs/phaser/phaser-bundle.min.js"></script>
     <script src="www/scripts/libs/underscore/underscore-bundle.min.js"></script>
     <script src="www/built/local/tsc.js"></script>

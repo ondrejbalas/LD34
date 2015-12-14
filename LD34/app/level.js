@@ -2,7 +2,8 @@ var Level = (function () {
     function Level(playArea, game) {
         this.playArea = playArea;
         this.game = game;
-        this.sprites = [];
+        this.obstacles = [];
+        this.gameOver = false;
         this.x = playArea.x;
         this.y = playArea.y;
     }
@@ -18,18 +19,23 @@ var Level = (function () {
     };
     Level.prototype.update = function () {
         var _this = this;
-        var delta = (this.game.time.elapsedMS / 1000);
-        this.position += delta * (this.speed / this.objectSize);
-        _.forEach(this.sprites, function (sprite) { return sprite.y += delta * _this.speed; });
-        var y = Math.ceil(this.position);
-        if (y > this.lastSpawnedRow) {
-            this.lastSpawnedRow++;
-            if (this.lastSpawnedRow < this.data.length) {
-                var row = this.data[this.lastSpawnedRow];
-                this.createRow(-this.objectSize, row);
-            }
-            else {
-                this.levelEnded();
+        if (!this.gameOver) {
+            var delta = (this.game.time.elapsedMS / 1000);
+            this.position += delta * (this.speed / this.objectSize);
+            _.forEach(this.obstacles, function (obstacle) {
+                obstacle.sprite.y += delta * _this.speed;
+                obstacle.circle.y += delta * _this.speed;
+            });
+            var y = Math.ceil(this.position);
+            if (y > this.lastSpawnedRow) {
+                this.lastSpawnedRow++;
+                if (this.lastSpawnedRow < this.data.length) {
+                    var row = this.data[this.lastSpawnedRow];
+                    this.createRow(-this.objectSize, row);
+                }
+                else {
+                    this.levelEnded();
+                }
             }
         }
     };
@@ -47,12 +53,16 @@ var Level = (function () {
         for (var i = 0; i < row.length; i++) {
             if (row[i] === 1) {
                 rowCount++;
-                this.sprites.push(this.layer.create(this.x + i * this.objectSize, position, this.obstacleImage));
+                this.obstacles.push(new Obstacle(this.layer.create(this.x + i * this.objectSize, position, this.obstacleImage), new Phaser.Circle(this.x + (this.objectSize / 2) + i * this.objectSize, position + (this.objectSize / 2), this.objectSize), row[i]));
             }
         }
     };
     Level.prototype.destroy = function () {
-        _.forEach(this.sprites, function (sprite) { return sprite.destroy(); });
+        _.forEach(this.obstacles, function (obstacle) { return obstacle.sprite.destroy(); });
+    };
+    Level.prototype.isPlayerColliding = function (player) {
+        var colliding = _.find(this.obstacles, function (obstacle) { return obstacle.isColliding(player); });
+        return colliding;
     };
     return Level;
 })();

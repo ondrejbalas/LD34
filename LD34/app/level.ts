@@ -7,20 +7,21 @@ class Level {
     public data: Uint8Array[]; // 0 = empty, 1 = obstacle, 2 = good drop, 3 = bad drop
     public background: Background;
     public lineWidth: number;
-    private sprites: Phaser.Sprite[] = [];
+    private obstacles: Obstacle[] = [];
     private x: number;
     private y: number;
     private layer: Phaser.Group;
     private objectSize: number;
     private obstacleImage: Phaser.BitmapData;
     private levelEnded: () => void;
+    public gameOver: boolean = false;
 
     constructor(private playArea: PlayArea, private game: Phaser.Game) {
         this.x = playArea.x;
         this.y = playArea.y;
     }
 
-    preload(): void {}
+    preload(): void { }
 
     create(layer: Phaser.Group, levelEnded: () => void): void {
         this.levelEnded = levelEnded;
@@ -33,19 +34,25 @@ class Level {
     }
 
     update(): void {
-        var delta = (this.game.time.elapsedMS / 1000);
-        this.position += delta * (this.speed / this.objectSize);
-        _.forEach(this.sprites, sprite => sprite.y += delta * this.speed);
+        if (!this.gameOver) {
+            var delta = (this.game.time.elapsedMS / 1000);
+            this.position += delta * (this.speed / this.objectSize);
+            _.forEach(this.obstacles, obstacle => {
+                obstacle.sprite.y += delta * this.speed;
+                obstacle.circle.y += delta * this.speed;
+                //this.game.debug.geom(obstacle.circle, 'rgb(0,255,0)', false);
+            });
 
-        var y = Math.ceil(this.position);
-        if (y > this.lastSpawnedRow) {
-            this.lastSpawnedRow++;
+            var y = Math.ceil(this.position);
+            if (y > this.lastSpawnedRow) {
+                this.lastSpawnedRow++;
 
-            if (this.lastSpawnedRow < this.data.length) {
-                var row = this.data[this.lastSpawnedRow];
-                this.createRow(-this.objectSize, row);
-            } else {
-                this.levelEnded();
+                if (this.lastSpawnedRow < this.data.length) {
+                    var row = this.data[this.lastSpawnedRow];
+                    this.createRow(-this.objectSize, row);
+                } else {
+                    this.levelEnded();
+                }
             }
         }
     }
@@ -65,12 +72,19 @@ class Level {
         for (var i = 0; i < row.length; i++) {
             if (row[i] === 1) {
                 rowCount++;
-                this.sprites.push(this.layer.create(this.x + i * this.objectSize, position, this.obstacleImage));
+                this.obstacles.push(new Obstacle(this.layer.create(this.x + i * this.objectSize, position, this.obstacleImage)
+                    , new Phaser.Circle(this.x + (this.objectSize / 2) + i * this.objectSize, position + (this.objectSize / 2), this.objectSize),
+                    row[i]));
             }
         }
     }
 
     destroy(): void {
-        _.forEach(this.sprites, sprite => sprite.destroy());
+        _.forEach(this.obstacles, obstacle => obstacle.sprite.destroy());
+    }
+
+    isPlayerColliding(player: Player): Obstacle {
+        var colliding = _.find(this.obstacles, obstacle => obstacle.isColliding(player));
+        return colliding;
     }
 }

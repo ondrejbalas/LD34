@@ -1,5 +1,6 @@
 var App = (function () {
     function App(width, height) {
+        this.isGameOver = false;
         this.game = new Phaser.Game(width, height, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
     }
     App.prototype.preload = function () {
@@ -7,20 +8,31 @@ var App = (function () {
         _.each(App.objects, function (o) { return o.preload(); });
     };
     App.prototype.create = function () {
+        var _this = this;
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
-        var spacerSize = 40;
+        this.game.stage.setBackgroundColor(0x00309A);
+        var spacerSize = 160;
         var playAreaWidth = (this.game.width - spacerSize) / 2;
         var kb = this.game.input.keyboard;
+        this.scoreArea = new ScoreArea(this.game, playAreaWidth, 0, spacerSize, this.game.height);
         var leftKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.A), kb.addKey(Phaser.Keyboard.D));
-        var leftArea = new PlayArea(0, this.game, 0, 0, playAreaWidth, this.game.height, leftKeys);
-        App.register(leftArea);
+        var callGameOver = function () {
+            if (!_this.isGameOver) {
+                _this.isGameOver = true;
+                _this.scoreArea.running = false;
+                _this.scoreArea.showGameOver();
+                _this.leftArea.gameOver();
+                _this.rightArea.gameOver();
+            }
+        };
+        this.leftArea = new PlayArea(0, this.game, this.scoreArea, 0, 0, playAreaWidth, this.game.height, leftKeys, callGameOver);
+        App.register(this.leftArea);
         var rightKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.LEFT), kb.addKey(Phaser.Keyboard.RIGHT));
-        var rightArea = new PlayArea(1, this.game, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys);
-        App.register(rightArea);
+        this.rightArea = new PlayArea(1, this.game, this.scoreArea, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys, callGameOver);
+        App.register(this.rightArea);
         leftKeys.otherInput = rightKeys;
         rightKeys.otherInput = leftKeys;
-        var scoreArea = new ScoreArea(this.game, playAreaWidth, 0, spacerSize, this.game.height);
-        App.register(scoreArea);
+        App.register(this.scoreArea);
         App.ranCreate = true;
         _.each(App.objects, function (o) { return o.create(); });
     };
@@ -175,7 +187,8 @@ var Level = (function () {
     function Level(playArea, game) {
         this.playArea = playArea;
         this.game = game;
-        this.sprites = [];
+        this.obstacles = [];
+        this.gameOver = false;
         this.x = playArea.x;
         this.y = playArea.y;
     }
@@ -191,18 +204,23 @@ var Level = (function () {
     };
     Level.prototype.update = function () {
         var _this = this;
-        var delta = (this.game.time.elapsedMS / 1000);
-        this.position += delta * (this.speed / this.objectSize);
-        _.forEach(this.sprites, function (sprite) { return sprite.y += delta * _this.speed; });
-        var y = Math.ceil(this.position);
-        if (y > this.lastSpawnedRow) {
-            this.lastSpawnedRow++;
-            if (this.lastSpawnedRow < this.data.length) {
-                var row = this.data[this.lastSpawnedRow];
-                this.createRow(-this.objectSize, row);
-            }
-            else {
-                this.levelEnded();
+        if (!this.gameOver) {
+            var delta = (this.game.time.elapsedMS / 1000);
+            this.position += delta * (this.speed / this.objectSize);
+            _.forEach(this.obstacles, function (obstacle) {
+                obstacle.sprite.y += delta * _this.speed;
+                obstacle.circle.y += delta * _this.speed;
+            });
+            var y = Math.ceil(this.position);
+            if (y > this.lastSpawnedRow) {
+                this.lastSpawnedRow++;
+                if (this.lastSpawnedRow < this.data.length) {
+                    var row = this.data[this.lastSpawnedRow];
+                    this.createRow(-this.objectSize, row);
+                }
+                else {
+                    this.levelEnded();
+                }
             }
         }
     };
@@ -220,12 +238,16 @@ var Level = (function () {
         for (var i = 0; i < row.length; i++) {
             if (row[i] === 1) {
                 rowCount++;
-                this.sprites.push(this.layer.create(this.x + i * this.objectSize, position, this.obstacleImage));
+                this.obstacles.push(new Obstacle(this.layer.create(this.x + i * this.objectSize, position, this.obstacleImage), new Phaser.Circle(this.x + (this.objectSize / 2) + i * this.objectSize, position + (this.objectSize / 2), this.objectSize), row[i]));
             }
         }
     };
     Level.prototype.destroy = function () {
-        _.forEach(this.sprites, function (sprite) { return sprite.destroy(); });
+        _.forEach(this.obstacles, function (obstacle) { return obstacle.sprite.destroy(); });
+    };
+    Level.prototype.isPlayerColliding = function (player) {
+        var colliding = _.find(this.obstacles, function (obstacle) { return obstacle.isColliding(player); });
+        return colliding;
     };
     return Level;
 })();
@@ -312,14 +334,17 @@ var LevelFactory = (function () {
     return LevelFactory;
 })();
 var PlayArea = (function () {
-    function PlayArea(id, game, x, y, width, height, input) {
+    function PlayArea(id, game, scoreArea, x, y, width, height, input, flagGameOver) {
         this.id = id;
         this.game = game;
+        this.scoreArea = scoreArea;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.input = input;
+        this.flagGameOver = flagGameOver;
+        this.gameIsOver = false;
         this.counter = 0;
         this.bgLayer = this.game.add.group();
         this.obstacleLayer = this.game.add.group();
@@ -327,6 +352,7 @@ var PlayArea = (function () {
     }
     PlayArea.prototype.setLevel = function (levelNumber) {
         var _this = this;
+        this.scoreArea.setLevel(levelNumber);
         console.log("setLevel: " + levelNumber);
         if (this.currentLevel) {
             this.currentLevel.destroy();
@@ -371,6 +397,18 @@ var PlayArea = (function () {
     };
     PlayArea.prototype.update = function () {
         this.currentLevel.update();
+        var colliding = this.currentLevel.isPlayerColliding(this.player);
+        if (colliding && colliding.type === 1) {
+            console.log(this.flagGameOver);
+            this.flagGameOver();
+        }
+    };
+    PlayArea.prototype.gameOver = function () {
+        this.gameIsOver = true;
+        this.currentLevel.gameOver = true;
+        this.currentLevel.destroy();
+        this.scoreArea.showGameOver();
+        this.player.gameOver();
     };
     return PlayArea;
 })();
@@ -381,38 +419,49 @@ var Player = (function () {
         this.layer = layer;
         this.speed = 400;
         this.size = 8;
+        this.isGameOver = false;
         this.startX = playArea.x + (playArea.width / 2);
         this.startY = playArea.height - 74;
         ;
     }
+    Player.prototype.gameOver = function () {
+        this.isGameOver = true;
+        this.sprite.destroy();
+    };
     Player.prototype.preload = function () {
     };
     Player.prototype.create = function () {
         this.image = PlayerImage.create(this.game, 64, 64, 32);
         this.sprite = this.layer.create(this.startX, this.startY, this.image.data);
-        this.game.physics.arcade.enable(this.sprite);
-        this.body = this.sprite.body;
         this.sprite.anchor.x = 0.5;
         this.sprite.anchor.y = 0.5;
-        this.sprite.scale.x = .5;
-        this.sprite.scale.y = .5;
-        this.body.offset.x = 64;
-        this.body.offset.y = 64;
+        this.game.physics.arcade.enable(this.sprite);
+        this.body = this.sprite.body;
+        this.body.offset.x = 16;
+        this.body.offset.y = 16;
         this.input = this.playArea.input;
+        this.collisionCircle = new Phaser.Circle(this.startX, this.startY, 32);
     };
     Player.prototype.update = function () {
-        this.body.velocity.x = 0;
-        var delta = (this.game.time.elapsedMS / 1000);
-        this.size = Math.min(32, this.size + (delta / 2));
-        this.sprite.scale.x = this.size / 16;
-        this.sprite.scale.y = this.size / 16;
-        this.frameSize = this.size;
-        this.body.x = Math.min(Math.max(this.body.x, this.playArea.x + (this.frameSize + 40)), this.playArea.x + this.playArea.width - (this.frameSize + 40));
-        if (this.input.isLeft()) {
-            this.body.velocity.x = -this.speed;
-        }
-        else if (this.input.isRight()) {
-            this.body.velocity.x = this.speed;
+        if (!this.isGameOver) {
+            this.body.velocity.x = 0;
+            var delta = (this.game.time.elapsedMS / 1000);
+            this.size = Math.min(32, this.size + (delta / 2));
+            this.body.offset.x = this.size * 2;
+            this.body.offset.y = this.size * 2;
+            this.sprite.scale.x = this.size / 16;
+            this.sprite.scale.y = this.size / 16;
+            this.frameSize = this.size;
+            this.body.x = Math.min(Math.max(this.body.x, this.playArea.x + (this.frameSize + 40)), this.playArea.x + this.playArea.width - (this.frameSize + 40));
+            this.collisionCircle.x = this.body.x;
+            this.collisionCircle.y = this.body.y;
+            this.collisionCircle.diameter = (this.size * 3);
+            if (this.input.isLeft()) {
+                this.body.velocity.x = -this.speed;
+            }
+            else if (this.input.isRight()) {
+                this.body.velocity.x = this.speed;
+            }
         }
     };
     return Player;
@@ -452,18 +501,61 @@ var ScoreArea = (function () {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.bgColor = 0x00309A;
+        this.level = 1;
+        this.score = 0;
+        this.running = true;
+        this.bgLayer = this.game.add.group();
+        this.textLayer = this.game.add.group();
     }
+    ScoreArea.prototype.setLevel = function (level) {
+        this.level = level;
+        if (this.levelText)
+            this.levelText.setText(level.toString());
+    };
+    ScoreArea.prototype.setScore = function (score) {
+        this.score = score;
+        if (this.scoreText)
+            this.scoreText.setText(Math.floor(score).toString());
+    };
+    ScoreArea.prototype.showGameOver = function () {
+        this.gameOverWordText.visible = true;
+        this.running = false;
+    };
     ScoreArea.prototype.preload = function () {
-        this.g = this.game.add.graphics(this.x, this.y);
+        this.game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
     };
     ScoreArea.prototype.create = function () {
-        this.g.lineStyle(0);
-        this.g.beginFill(this.bgColor, 1);
-        this.g.drawRect(0, 0, this.width, this.height);
-        this.g.endFill();
+        this.game.time.events.add(Phaser.Timer.QUARTER, this.createText, this);
+    };
+    ScoreArea.prototype.createText = function () {
+        this.levelWordText = this.createTextObject("LEVEL", 48, this.y + 100);
+        this.levelText = this.createTextObject(this.level.toString(), 110, this.y + 190);
+        this.scoreWordText = this.createTextObject("SCORE", 44, this.y + 590);
+        this.scoreText = this.createTextObject(Math.floor(this.score).toString(), 32, this.y + 650);
+        this.gameOverWordText = this.createTextObject("GAME OVER!", 160, this.height / 2);
+        this.gameOverWordText.visible = false;
+    };
+    ScoreArea.prototype.createTextObject = function (text, size, yPos) {
+        var newText = this.game.add.text(this.x + this.width / 2, yPos, text, null);
+        newText.font = 'Revalia';
+        newText.fontSize = size;
+        newText.anchor.setTo(0.5);
+        var grd = newText.context.createLinearGradient(0, 0, 0, newText.canvas.height);
+        grd.addColorStop(0, '#FFFBA4');
+        grd.addColorStop(1, '#288A00');
+        newText.fill = grd;
+        newText.align = 'center';
+        newText.stroke = '#000000';
+        newText.strokeThickness = 2;
+        newText.setShadow(7, 7, 'rgba(0,0,0,0.5)', 5);
+        return newText;
     };
     ScoreArea.prototype.update = function () {
+        if (this.running) {
+            var delta = (this.game.time.elapsedMS / 1000);
+            this.score += delta * 28;
+            this.setScore(this.score);
+        }
     };
     return ScoreArea;
 })();
@@ -476,6 +568,17 @@ var Theme;
     Theme[Theme["Random"] = 4] = "Random";
 })(Theme || (Theme = {}));
 ;
+var Obstacle = (function () {
+    function Obstacle(sprite, circle, type) {
+        this.sprite = sprite;
+        this.circle = circle;
+        this.type = type;
+    }
+    Obstacle.prototype.isColliding = function (player) {
+        return Phaser.Circle.intersects(this.circle, player.collisionCircle);
+    };
+    return Obstacle;
+})();
 var ObstacleImage = (function () {
     function ObstacleImage() {
     }

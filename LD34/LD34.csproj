@@ -35,9 +35,11 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app\abstract\IGameObject.ts" />
+    <TypeScriptCompile Include="app\abstract\IHittable.ts" />
     <TypeScriptCompile Include="app\app.ts" />
     <TypeScriptCompile Include="app\background.ts" />
     <TypeScriptCompile Include="app\enum\theme.ts" />
+    <TypeScriptCompile Include="app\GameObjects\Obstacle.ts" />
     <TypeScriptCompile Include="app\imagegen\ObstacleImage.ts" />
     <TypeScriptCompile Include="app\imagegen\PlayerImage.ts" />
     <TypeScriptCompile Include="app\level.ts" />
