@@ -57,6 +57,8 @@ var App = (function () {
                 App.register(this.scoreArea);
                 this.leftArea.start();
                 this.rightArea.start();
+                this.leftArea.player.size = 8;
+                this.rightArea.player.size = 8;
             }
         }
         _.each(App.objects, function (o) { return o.update(); });
