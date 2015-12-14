@@ -29,7 +29,7 @@ var ScoreArea = (function () {
         this.game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
     };
     ScoreArea.prototype.create = function () {
-        this.game.time.events.add(Phaser.Timer.QUARTER, this.createText, this);
+        this.game.time.events.add(Phaser.Timer.SECOND, this.createText, this);
     };
     ScoreArea.prototype.createText = function () {
         this.levelWordText = this.createTextObject("LEVEL", 48, this.y + 100);

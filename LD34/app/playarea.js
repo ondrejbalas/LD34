@@ -10,23 +10,27 @@ var PlayArea = (function () {
         this.input = input;
         this.flagGameOver = flagGameOver;
         this.gameIsOver = false;
+        this.started = false;
         this.counter = 0;
         this.bgLayer = this.game.add.group();
         this.obstacleLayer = this.game.add.group();
         this.playerLayer = this.game.add.group();
     }
-    PlayArea.prototype.setLevel = function (levelNumber) {
+    PlayArea.prototype.start = function () {
+        this.currentLevel.gameOver = false;
+    };
+    PlayArea.prototype.setLevel = function (levelNumber, running) {
         var _this = this;
         this.scoreArea.setLevel(levelNumber);
-        console.log("setLevel: " + levelNumber);
         if (this.currentLevel) {
             this.currentLevel.destroy();
         }
         var level = LevelFactory.createLevel(this, this.game, levelNumber);
+        level.gameOver = !running;
         level.preload();
         level.create(this.obstacleLayer, function () {
             level.destroy();
-            _this.setLevel(levelNumber + 1);
+            _this.setLevel(levelNumber + 1, true);
         });
         this.currentLevel = level;
         this.playerY = 0;
@@ -56,16 +60,21 @@ var PlayArea = (function () {
     PlayArea.prototype.preload = function () {
     };
     PlayArea.prototype.create = function () {
-        this.setLevel(1);
+        this.setLevel(1, false);
         this.player = new Player(this, this.game, this.playerLayer);
         App.register(this.player);
     };
     PlayArea.prototype.update = function () {
         this.currentLevel.update();
         var colliding = this.currentLevel.isPlayerColliding(this.player);
-        if (colliding && colliding.type === 1) {
-            console.log(this.flagGameOver);
-            this.flagGameOver();
+        if (colliding) {
+            if (colliding.type === 1) {
+                console.log(this.flagGameOver);
+                this.flagGameOver();
+            }
+            if (colliding.type === 2) {
+                this.player.size = 6;
+            }
         }
     };
     PlayArea.prototype.gameOver = function () {

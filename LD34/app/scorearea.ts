@@ -39,7 +39,7 @@
     }
 
     create(): void {
-        this.game.time.events.add(Phaser.Timer.QUARTER, this.createText, this);
+        this.game.time.events.add(Phaser.Timer.SECOND, this.createText, this);
     }
 
     createText(): void {

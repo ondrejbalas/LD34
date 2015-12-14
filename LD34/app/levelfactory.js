@@ -2,7 +2,6 @@ var LevelFactory = (function () {
     function LevelFactory() {
     }
     LevelFactory.createLevel = function (playArea, game, level) {
-        console.debug("making a level " + level);
         switch (level) {
             case 1:
                 return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 50, 14, 0.05, 0.05, 0.25, 1);
@@ -36,7 +35,7 @@ var LevelFactory = (function () {
             obstacles += obstaclesInRow;
             lv.data.push(line);
         }
-        for (var i = 0; i < blankLines; i++) {
+        for (var k = 0; k < blankLines; k++) {
             lv.data.push(this.createEmptyLine(lineWidth));
         }
         return lv;

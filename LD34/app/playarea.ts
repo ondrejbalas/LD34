@@ -12,20 +12,25 @@ class PlayArea implements IGameObject {
     private playerLayer: Phaser.Group;
 
     private gameIsOver: boolean = false;
+    private started: boolean = false;
+
+    public start(): void {
+        this.currentLevel.gameOver = false;
+    }
 
     private currentLevel: Level;
-    public setLevel(levelNumber: number): void {
+    public setLevel(levelNumber: number, running: boolean): void {
         this.scoreArea.setLevel(levelNumber);
-        console.log("setLevel: " + levelNumber);
         if (this.currentLevel) {
             this.currentLevel.destroy();
         }
 
         var level = LevelFactory.createLevel(this, this.game, levelNumber);
+        level.gameOver = !running;
         level.preload();
         level.create(this.obstacleLayer, () => {
             level.destroy();
-            this.setLevel(levelNumber + 1);
+            this.setLevel(levelNumber + 1, true);
         });
         this.currentLevel = level;
         this.playerY = 0;
@@ -69,7 +74,7 @@ class PlayArea implements IGameObject {
     }
 
     create(): void {
-        this.setLevel(1);
+        this.setLevel(1, false);
         
         this.player = new Player(this, this.game, this.playerLayer);
 
@@ -81,9 +86,14 @@ class PlayArea implements IGameObject {
         this.currentLevel.update();
 
         var colliding = this.currentLevel.isPlayerColliding(this.player);
-        if (colliding && colliding.type === 1) {
-            console.log(this.flagGameOver);
-            this.flagGameOver();
+        if (colliding) {
+            if (colliding.type === 1) {
+                console.log(this.flagGameOver);
+                this.flagGameOver();
+            }
+            if (colliding.type === 2) {
+                this.player.size = 6;
+            }
         }
         //this.game.debug.text("Colliding: " + colliding.type, this.x + 100, 120);
     }

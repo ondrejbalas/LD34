@@ -6,7 +6,7 @@ class Player implements IGameObject {
 
     private speed: number = 400;
 
-    private size: number = 8; // size
+    public size: number = 8; // size
     private frameSize: number; // size this frame (used for pulsing)
 
     private input: PlayerInput;

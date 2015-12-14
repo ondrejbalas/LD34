@@ -1,6 +1,5 @@
 ﻿class LevelFactory {
     public static createLevel(playArea: PlayArea, game: Phaser.Game, level: number): Level {
-        console.debug("making a level " + level);
         switch (level) {
         case 1:
             return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 50, 14, 0.05, 0.05, 0.25, 1);
@@ -52,7 +51,7 @@
             lv.data.push(line);
         }
 
-        for (var i = 0; i < blankLines; i++) {
+        for (var k = 0; k < blankLines; k++) {
             lv.data.push(this.createEmptyLine(lineWidth));
         }
         return lv;

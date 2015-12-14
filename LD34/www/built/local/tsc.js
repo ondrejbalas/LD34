@@ -1,5 +1,6 @@
 var App = (function () {
     function App(width, height) {
+        this.gameStarted = false;
         this.isGameOver = false;
         this.game = new Phaser.Game(width, height, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
     }
@@ -11,11 +12,12 @@ var App = (function () {
         var _this = this;
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
         this.game.stage.setBackgroundColor(0x00309A);
+        this.kb = this.game.input.keyboard;
+        this.kb.addKey(Phaser.Keyboard.ENTER);
         var spacerSize = 160;
         var playAreaWidth = (this.game.width - spacerSize) / 2;
-        var kb = this.game.input.keyboard;
         this.scoreArea = new ScoreArea(this.game, playAreaWidth, 0, spacerSize, this.game.height);
-        var leftKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.A), kb.addKey(Phaser.Keyboard.D));
+        var leftKeys = new PlayerInput(this.kb.addKey(Phaser.Keyboard.A), this.kb.addKey(Phaser.Keyboard.D));
         var callGameOver = function () {
             if (!_this.isGameOver) {
                 _this.isGameOver = true;
@@ -27,16 +29,35 @@ var App = (function () {
         };
         this.leftArea = new PlayArea(0, this.game, this.scoreArea, 0, 0, playAreaWidth, this.game.height, leftKeys, callGameOver);
         App.register(this.leftArea);
-        var rightKeys = new PlayerInput(kb.addKey(Phaser.Keyboard.LEFT), kb.addKey(Phaser.Keyboard.RIGHT));
+        var rightKeys = new PlayerInput(this.kb.addKey(Phaser.Keyboard.LEFT), this.kb.addKey(Phaser.Keyboard.RIGHT));
         this.rightArea = new PlayArea(1, this.game, this.scoreArea, playAreaWidth + spacerSize, 0, playAreaWidth, this.game.height, rightKeys, callGameOver);
         App.register(this.rightArea);
         leftKeys.otherInput = rightKeys;
         rightKeys.otherInput = leftKeys;
-        App.register(this.scoreArea);
         App.ranCreate = true;
         _.each(App.objects, function (o) { return o.create(); });
+        this.instructionsText = this.game.add.text(this.game.width / 2, this.game.height / 2, "Welcome to my submission to Ludum Dare 34!\r\n\r\nYou will be controlling two balls of electricity.\r\n\r\nControl the left one by using the A and D keys, and the right one with the Left and Right arrow keys.\r\n\r\nThey cannot move independently and must be moved TOGETHER.\r\n\r\nTry it now by pressing the A key and LEFT arrow together.\r\n\r\nPress ENTER to play.", null);
+        this.instructionsText.anchor.setTo(0.5, 0.5);
+        this.instructionsText.fontSize = 28;
+        var grd = this.instructionsText.context.createLinearGradient(0, 0, 0, this.instructionsText.canvas.height);
+        grd.addColorStop(0, '#FFFBA4');
+        grd.addColorStop(1, '#288A00');
+        this.instructionsText.fill = grd;
+        this.instructionsText.align = 'center';
+        this.instructionsText.stroke = '#000000';
+        this.instructionsText.strokeThickness = 2;
+        this.instructionsText.setShadow(7, 7, 'rgba(0,0,0,0.5)', 5);
     };
     App.prototype.update = function () {
+        if (this.kb.isDown(Phaser.Keyboard.ENTER)) {
+            if (!this.gameStarted) {
+                this.instructionsText.visible = false;
+                this.gameStarted = true;
+                App.register(this.scoreArea);
+                this.leftArea.start();
+                this.rightArea.start();
+            }
+        }
         _.each(App.objects, function (o) { return o.update(); });
     };
     App.register = function (obj) {
@@ -55,7 +76,7 @@ var App = (function () {
     return App;
 })();
 window.onload = function () {
-    var app = new App(1400, 800);
+    var app = new App(1400, 700);
 };
 var Background = (function () {
     function Background(color1, color2, color3, color4) {
@@ -199,7 +220,8 @@ var Level = (function () {
         this.position = -1;
         this.lastSpawnedRow = -1;
         this.objectSize = this.playArea.width / this.lineWidth;
-        this.obstacleImage = ObstacleImage.create(this.game, this.objectSize);
+        this.obstacleImage = ObstacleImage.create(this.game, this.objectSize, 1);
+        this.powerUpImage = ObstacleImage.create(this.game, this.objectSize, 2);
         this.createInitialRows();
     };
     Level.prototype.update = function () {
@@ -236,9 +258,9 @@ var Level = (function () {
     Level.prototype.createRow = function (position, row) {
         var rowCount = 0;
         for (var i = 0; i < row.length; i++) {
-            if (row[i] === 1) {
+            if (row[i] === 1 || row[i] === 2) {
                 rowCount++;
-                this.obstacles.push(new Obstacle(this.layer.create(this.x + i * this.objectSize, position, this.obstacleImage), new Phaser.Circle(this.x + (this.objectSize / 2) + i * this.objectSize, position + (this.objectSize / 2), this.objectSize), row[i]));
+                this.obstacles.push(new Obstacle(this.layer.create(this.x + i * this.objectSize, position, row[i] === 1 ? this.obstacleImage : this.powerUpImage), new Phaser.Circle(this.x + (this.objectSize / 2) + i * this.objectSize, position + (this.objectSize / 2), this.objectSize), row[i]));
             }
         }
     };
@@ -247,6 +269,13 @@ var Level = (function () {
     };
     Level.prototype.isPlayerColliding = function (player) {
         var colliding = _.find(this.obstacles, function (obstacle) { return obstacle.isColliding(player); });
+        if (colliding) {
+            if (colliding.type === 2) {
+                colliding.sprite.destroy();
+                colliding.circle.diameter = 0;
+                colliding.circle.y = 2000;
+            }
+        }
         return colliding;
     };
     return Level;
@@ -255,7 +284,6 @@ var LevelFactory = (function () {
     function LevelFactory() {
     }
     LevelFactory.createLevel = function (playArea, game, level) {
-        console.debug("making a level " + level);
         switch (level) {
             case 1:
                 return LevelFactory.create(playArea, game, Background.fromTheme(Theme.Random), 140, 50, 14, 0.05, 0.05, 0.25, 1);
@@ -289,7 +317,7 @@ var LevelFactory = (function () {
             obstacles += obstaclesInRow;
             lv.data.push(line);
         }
-        for (var i = 0; i < blankLines; i++) {
+        for (var k = 0; k < blankLines; k++) {
             lv.data.push(this.createEmptyLine(lineWidth));
         }
         return lv;
@@ -345,23 +373,27 @@ var PlayArea = (function () {
         this.input = input;
         this.flagGameOver = flagGameOver;
         this.gameIsOver = false;
+        this.started = false;
         this.counter = 0;
         this.bgLayer = this.game.add.group();
         this.obstacleLayer = this.game.add.group();
         this.playerLayer = this.game.add.group();
     }
-    PlayArea.prototype.setLevel = function (levelNumber) {
+    PlayArea.prototype.start = function () {
+        this.currentLevel.gameOver = false;
+    };
+    PlayArea.prototype.setLevel = function (levelNumber, running) {
         var _this = this;
         this.scoreArea.setLevel(levelNumber);
-        console.log("setLevel: " + levelNumber);
         if (this.currentLevel) {
             this.currentLevel.destroy();
         }
         var level = LevelFactory.createLevel(this, this.game, levelNumber);
+        level.gameOver = !running;
         level.preload();
         level.create(this.obstacleLayer, function () {
             level.destroy();
-            _this.setLevel(levelNumber + 1);
+            _this.setLevel(levelNumber + 1, true);
         });
         this.currentLevel = level;
         this.playerY = 0;
@@ -391,16 +423,21 @@ var PlayArea = (function () {
     PlayArea.prototype.preload = function () {
     };
     PlayArea.prototype.create = function () {
-        this.setLevel(1);
+        this.setLevel(1, false);
         this.player = new Player(this, this.game, this.playerLayer);
         App.register(this.player);
     };
     PlayArea.prototype.update = function () {
         this.currentLevel.update();
         var colliding = this.currentLevel.isPlayerColliding(this.player);
-        if (colliding && colliding.type === 1) {
-            console.log(this.flagGameOver);
-            this.flagGameOver();
+        if (colliding) {
+            if (colliding.type === 1) {
+                console.log(this.flagGameOver);
+                this.flagGameOver();
+            }
+            if (colliding.type === 2) {
+                this.player.size = 6;
+            }
         }
     };
     PlayArea.prototype.gameOver = function () {
@@ -525,7 +562,7 @@ var ScoreArea = (function () {
         this.game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
     };
     ScoreArea.prototype.create = function () {
-        this.game.time.events.add(Phaser.Timer.QUARTER, this.createText, this);
+        this.game.time.events.add(Phaser.Timer.SECOND, this.createText, this);
     };
     ScoreArea.prototype.createText = function () {
         this.levelWordText = this.createTextObject("LEVEL", 48, this.y + 100);
@@ -582,8 +619,8 @@ var Obstacle = (function () {
 var ObstacleImage = (function () {
     function ObstacleImage() {
     }
-    ObstacleImage.create = function (game, size) {
-        var key = 'obstacle.' + size;
+    ObstacleImage.create = function (game, size, type) {
+        var key = 'obstacle.' + size + '.' + type;
         var factory = function () {
             var data = game.add.bitmapData(size, size, key, true);
             var p1 = size * 5 / 8;
@@ -591,11 +628,20 @@ var ObstacleImage = (function () {
             var p2 = size / 2;
             var r2 = size / 2;
             var grd = data.context.createRadialGradient(p1, p1, r1, size * 2 / 4, size * 2 / 4, size / 2);
-            grd.addColorStop(0, "#FEF4FC");
-            grd.addColorStop(0.08, "#FFD7F0");
-            grd.addColorStop(0.22, "#FF2DA6");
-            grd.addColorStop(0.5, "#E01626");
-            grd.addColorStop(1.0, "#750C06");
+            switch (type) {
+                case 2:
+                    grd.addColorStop(0, "#2DCAFF");
+                    grd.addColorStop(0.08, "#2DCAFF");
+                    grd.addColorStop(0.22, "#2DCAFF");
+                    grd.addColorStop(0.5, "#2DCAFF");
+                    grd.addColorStop(1.0, "#2DCAFF");
+                default:
+                    grd.addColorStop(0, "#FEF4FC");
+                    grd.addColorStop(0.08, "#FFD7F0");
+                    grd.addColorStop(0.22, "#FF2DA6");
+                    grd.addColorStop(0.5, "#E01626");
+                    grd.addColorStop(1.0, "#750C06");
+            }
             data.circle(size / 2, size / 2, size / 2, grd);
             ;
             return data;

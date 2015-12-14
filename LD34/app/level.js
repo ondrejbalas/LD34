@@ -14,7 +14,8 @@ var Level = (function () {
         this.position = -1;
         this.lastSpawnedRow = -1;
         this.objectSize = this.playArea.width / this.lineWidth;
-        this.obstacleImage = ObstacleImage.create(this.game, this.objectSize);
+        this.obstacleImage = ObstacleImage.create(this.game, this.objectSize, 1);
+        this.powerUpImage = ObstacleImage.create(this.game, this.objectSize, 2);
         this.createInitialRows();
     };
     Level.prototype.update = function () {
@@ -51,9 +52,9 @@ var Level = (function () {
     Level.prototype.createRow = function (position, row) {
         var rowCount = 0;
         for (var i = 0; i < row.length; i++) {
-            if (row[i] === 1) {
+            if (row[i] === 1 || row[i] === 2) {
                 rowCount++;
-                this.obstacles.push(new Obstacle(this.layer.create(this.x + i * this.objectSize, position, this.obstacleImage), new Phaser.Circle(this.x + (this.objectSize / 2) + i * this.objectSize, position + (this.objectSize / 2), this.objectSize), row[i]));
+                this.obstacles.push(new Obstacle(this.layer.create(this.x + i * this.objectSize, position, row[i] === 1 ? this.obstacleImage : this.powerUpImage), new Phaser.Circle(this.x + (this.objectSize / 2) + i * this.objectSize, position + (this.objectSize / 2), this.objectSize), row[i]));
             }
         }
     };
@@ -62,6 +63,13 @@ var Level = (function () {
     };
     Level.prototype.isPlayerColliding = function (player) {
         var colliding = _.find(this.obstacles, function (obstacle) { return obstacle.isColliding(player); });
+        if (colliding) {
+            if (colliding.type === 2) {
+                colliding.sprite.destroy();
+                colliding.circle.diameter = 0;
+                colliding.circle.y = 2000;
+            }
+        }
         return colliding;
     };
     return Level;
