@@ -41,12 +41,13 @@ var App = (function () {
         this.instructionsText.fontSize = 28;
         var grd = this.instructionsText.context.createLinearGradient(0, 0, 0, this.instructionsText.canvas.height);
         grd.addColorStop(0, '#FFFBA4');
-        grd.addColorStop(1, '#288A00');
+        grd.addColorStop(0.1, '#FFFBA4');
+        grd.addColorStop(1, '#3DD600');
         this.instructionsText.fill = grd;
         this.instructionsText.align = 'center';
         this.instructionsText.stroke = '#000000';
-        this.instructionsText.strokeThickness = 2;
-        this.instructionsText.setShadow(7, 7, 'rgba(0,0,0,0.5)', 5);
+        this.instructionsText.strokeThickness = 3;
+        this.instructionsText.setShadow(4, 4, 'rgba(0,0,0,0.5)', 5);
     };
     App.prototype.update = function () {
         if (this.kb.isDown(Phaser.Keyboard.ENTER)) {
